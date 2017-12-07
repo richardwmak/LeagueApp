@@ -2,10 +2,15 @@
 
 import json
 from urllib.request import urlopen
+import urllib.error
 import sqlite3
 
 class ApiRequest:
     """"""
+
+################################################################################
+# INITIALIZATION METHODS
+################################################################################
 
     def __init__(self, username, region):
         """
@@ -27,9 +32,12 @@ class ApiRequest:
         # look up champion names by key
         self.id_to_champion = dict([ (v, k) for k, v in self.champion_to_id.items()])
 
+        self.account_data = self.get_account_data()
+
+
     def get_data_from_url(self, url):
         """
-        Since data is pulled from Riot's API the same way
+        Since data is pulled from Riot"s API the same way
         basically every time, this function generalises it
 
         Args:
@@ -38,11 +46,16 @@ class ApiRequest:
         Returns:
             data: the decoded json data
         """
-        http_response = urlopen(url)
-        http_content = http_response.read().decode("utf-8")
-        data = json.loads(http_content)
+        try:
+            http_response = urlopen(url)
+            http_content = http_response.read().decode("utf-8")
+            data = json.loads(http_content)
 
-        return data
+            return data
+        except urllib.error.URLError as e:
+            print("An error has occured: " + e.reason)
+
+            return False
 
 
     def get_version(self):
@@ -63,11 +76,11 @@ class ApiRequest:
 
     def get_champion_list(self):
         """
-        Method which returns champions names and IDs.
+        Method that returns champions names and IDs.
         This is static so we can run it each time without issue
 
         Args:
-            self.league_version: current league version
+            self.league_version
 
         Returns:
             champion_list: dictionary of the form champion name => champion id
@@ -81,16 +94,17 @@ class ApiRequest:
         #     |-- champion_first_data
         #     |-- ...
         #     |-- champion_last_data
-        data = self.get_data_from_url("http://ddragon.leagueoflegends.com/cdn/" + self.league_version + "/data/en_US/champion.json")
+        data = self.get_data_from_url("http://ddragon.leagueoflegends.com/cdn/"
+            + self.league_version + "/data/en_US/champion.json")
 
         champion_list = {}
         for champion in data["data"]:
-            champion_list[champion] = int(data["data"][champion]["key"])
+            champion_list[champion] = data["data"][champion]["key"]
 
         return champion_list
 
 
-    def get_summoner_data(self):
+    def get_account_data(self):
         """
         Method to get account information for a user
 
@@ -101,9 +115,44 @@ class ApiRequest:
         Returns:
             account_data: dictionary with account data
         """
-        data = self.get_data_from_url("https://" + self.region + ".api.riotgames.com/lol/summoner/v3/summoners/by-name/" + self.username + "?api_key=" + self.api_key)
+        data = self.get_data_from_url("https://" + self.region
+            + ".api.riotgames.com/lol/summoner/v3/summoners/by-name/"
+            + self.username + "?api_key=" + self.api_key)
 
         return data
+
+
+################################################################################
+# INITIALIZATION METHODS OVER
+################################################################################
+
+    def get_champion_mastery(self):
+        """
+        Method that returns all data related to champion mastery
+
+        Args:
+            self.account_data["id"]
+            self.region
+            self.api_key
+
+        Returns: mastery_data - a dict with key champion ID
+        """
+
+        data = self.get_data_from_url("https://" + self.region
+            + ".api.riotgames.com/lol/champion-mastery/v3/champion-masteries/by-summoner/"
+            + str(self.account_data["id"]) + "?api_key=" + self.api_key)
+
+        # data given is not ordered by key, unfortunately
+        mastery_data = {}
+        for champion in data:
+            championId = champion["championId"]
+            mastery_data[championId] = {}
+            for stat in champion:
+                # cut out stats we have already
+                if not stat == "championId" or stat == "playerId":
+                    mastery_data[championId][stat] = champion[stat]
+        
+        return mastery_data
 
 
 
