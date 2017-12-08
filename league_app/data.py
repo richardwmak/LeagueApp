@@ -1,4 +1,17 @@
-"""Handles the API requests and data storage"""
+"""Handles the API requests and data storage
+
+Test commands:
+
+from importlib import reload
+import sys
+
+if "data" in sys.modules:
+    reload(data)
+else:
+    import data
+
+data1 = data.ApiRequest("reeepicheeep", "EUW1")
+"""
 
 import json
 from urllib.request import urlopen
@@ -23,8 +36,8 @@ class ApiRequest:
         self.api_key = "RGAPI-39eaf651-3b99-4822-9b04-7358d913652e"
         self.username = username
         self.region = region
+        self.version = None
 
-        self.league_version = self.get_version()
         self.champion_to_id = self.get_champion_list()
 
         # https://stackoverflow.com/questions/483666/python-reverse-invert-a-mapping
@@ -37,17 +50,23 @@ class ApiRequest:
 
     def get_data_from_url(self, url):
         """
-        Since data is pulled from Riot"s API the same way
+        Since data is pulled from Riot's API the same way
         basically every time, this function generalises it
 
+        It is always of the form
+
+        https://REGION.api.riotgames.com/lol/API_CATEGORY?api_key=API_KEY
+
         Args:
-            url: location of the data
+            self.region
+            self.api_key
+            url: location of the data (i.e. API_CATEGORY)
 
         Returns:
             data: the decoded json data
         """
         try:
-            http_response = urlopen(url)
+            http_response = urlopen("https://" + self.region + ".api.riotgames.com/lol/" + url + "?api_key=" + self.api_key)
             http_content = http_response.read().decode("utf-8")
             data = json.loads(http_content)
 
@@ -58,29 +77,12 @@ class ApiRequest:
             return False
 
 
-    def get_version(self):
-        """
-        Load the current league version
-        This is static so we can run it each time without issue
-
-        Returns:
-            version: current league version
-        """
-        version_list = self.get_data_from_url("https://ddragon.leagueoflegends.com/api/versions.json")
-
-        # the first element in the array is the latest version
-        version = version_list[0]
-
-        return version
-
-
     def get_champion_list(self):
         """
         Method that returns champions names and IDs.
         This is static so we can run it each time without issue
 
         Args:
-            self.league_version
 
         Returns:
             champion_list: dictionary of the form champion name => champion id
@@ -88,18 +90,19 @@ class ApiRequest:
         # the format of data is
         # data
         # |-- type: "champion"
-        # |-- format: "standAloneComplex"
         # |-- version: current version
         # |-- data
         #     |-- champion_first_data
         #     |-- ...
         #     |-- champion_last_data
-        data = self.get_data_from_url("http://ddragon.leagueoflegends.com/cdn/"
-            + self.league_version + "/data/en_US/champion.json")
+        data = self.get_data_from_url("static-data/v3/champions")
 
         champion_list = {}
         for champion in data["data"]:
-            champion_list[champion] = data["data"][champion]["key"]
+            champion_list[champion] = data["data"][champion]["id"]
+
+        # while we're at it, set the current version
+        self.version = data["version"]
 
         return champion_list
 
@@ -110,14 +113,12 @@ class ApiRequest:
 
         Args:
             self.username
-            self.region
 
         Returns:
             account_data: dictionary with account data
         """
-        data = self.get_data_from_url("https://" + self.region
-            + ".api.riotgames.com/lol/summoner/v3/summoners/by-name/"
-            + self.username + "?api_key=" + self.api_key)
+        data = self.get_data_from_url("summoner/v3/summoners/by-name/"
+            + self.username)
 
         return data
 
@@ -132,15 +133,13 @@ class ApiRequest:
 
         Args:
             self.account_data["id"]
-            self.region
-            self.api_key
 
-        Returns: mastery_data - a dict with key champion ID
+        Returns:
+            mastery_data - a dict with key champion ID
         """
 
-        data = self.get_data_from_url("https://" + self.region
-            + ".api.riotgames.com/lol/champion-mastery/v3/champion-masteries/by-summoner/"
-            + str(self.account_data["id"]) + "?api_key=" + self.api_key)
+        data = self.get_data_from_url("champion-mastery/v3/champion-masteries/by-summoner/"
+            + str(self.account_data["id"]))
 
         # data given is not ordered by key, unfortunately
         mastery_data = {}
@@ -154,6 +153,25 @@ class ApiRequest:
         
         return mastery_data
 
+
+    def get_rank_data(self):
+        """
+        Method that returns all data related to the users current rank
+
+        Args:
+            self.account_data["id"]
+
+        Returns:
+            rank_data - dict with information on ranked things
+        """
+
+        data = self.get_data_from_url("league/v3/positions/by-summoner/"
+            + str(self.account_data["id"]))
+
+        # this returns an array with one entry so just
+        # return the dict in there
+
+        return data[0]
 
 
 class DbMethods:
