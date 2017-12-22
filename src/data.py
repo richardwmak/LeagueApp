@@ -13,10 +13,17 @@ else:
 data1 = data.ApiRequest("reeepicheeep", "EUW1")
 """
 import json
+import logging
+import sqlite3
 from   urllib.request import urlopen
 import urllib.error
-import sqlite3
 
+# set up logging
+logger = logging.getLogger(__name__)
+if not __name__ == "__main__":
+    # if not run from main, set up extra logging stuff
+    logging.basicConfig(filename='LeagueApp.log', level=logging.INFO)
+    
 class ApiRequest:
     """"""
 ################################################################################
@@ -31,7 +38,8 @@ class ApiRequest:
             username: League of Legends username
             region: Account region
         """
-        self.api_key = "RGAPI-86536f4f-bab0-41d1-b061-02b5bd50a02e"
+
+        self.api_key = "RGAPI-6a1c6e7c-367d-4d36-83b7-f754b9e1ee61"
         self.username = username
         self.region = region
         self.version = None
@@ -174,14 +182,16 @@ class ApiRequest:
         Returns:
             data: the decoded json data
         """
+        logger.info("Attempting to connect to Riot API.")
         try:
             http_response = urlopen("https://" + self.region + ".api.riotgames.com/lol/" + url + "?api_key=" + self.api_key)
             http_content = http_response.read().decode("utf-8")
             data = json.loads(http_content)
 
+            logger.info("Successfully retrieved data.")
             return data
         except urllib.error.URLError as e:
-            print("An error has occured: " + e.reason)
+            logger.info("An error has occured: %s" % e.reason)
 
             return False
 
@@ -225,8 +235,14 @@ class ApiRequest:
                 "champion"
             """
 
-        local_champion_list = Db.query(sql)
+        # the query returns an array such that array[0][0]
+        # is the actual champion key
+        temp_champion_list = Db.query(sql)
+        local_champion_list = []
         
+        for key in temp_champion_list:
+            local_champion_list.append(key[0])
+
         key_diff = []
 
         # list the champions that haven't been updated
@@ -341,17 +357,26 @@ class Db:
             db_name - database location relative to data.py
 
         Returns:
-            result: the query result
+            result: the query result as a dict of dicts
+                each subdict is a row
                 note: result == [] if sqlite finds no rows
         """
 
         if not db_name.endswith(".db"):
             db_name += ".db"
-            
+        
+        logger.info("Accessing database: %s" % (db_name))
+
+        def dict_factory(cursor, row):
+            d = {}
+            for idx, col in enumerate(cursor.description):
+                d[col[0]] = row[idx]
+            return d
 
         try:
             # open the connection
             conn = sqlite3.connect(db_name)
+            conn.row_factory = dict_factory
             cursor = conn.cursor()
 
             cursor.execute(query, params)
@@ -359,8 +384,11 @@ class Db:
             conn.commit()
             # close the connection
         except sqlite3.Error as e:
-            print("A database error has occurred: ", e.args[0])
+            logger.info("A database error has occurred: ", e.args[0])
             result = False
         finally:
+            if not result == False:
+                logger.info("Successfully ran query.")
+            logger.info("Database connection closed.")
             conn.close()
             return result
