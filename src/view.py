@@ -2,7 +2,7 @@
 Main GUI code
 """
 import logging
-from PyQt5.QtWidgets import QWidget, QPushButton
+from PyQt5.QtWidgets import QFrame, QGridLayout, QMainWindow, QWidget
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -10,11 +10,9 @@ if not __name__ == "__main__":
     # if not run from main, set up extra logging stuff
     logging.basicConfig(filename='LeagueApp.log', level=logging.INFO)
 
-class CustomWidget(QWidget):
-    def __init__(self, parent = None):
-        super().__init__()
-        self.set_parent(parent)
 
+class UiFunctions():
+    def __init__(self):
         logger.info("Initializing window: %s" % self.__class__.__name__)
 
 
@@ -29,41 +27,99 @@ class CustomWidget(QWidget):
         except EnvironmentError as e:
             logger.info('Error accessing stylesheet: %s' % (e.args[0]))
 
-    def set_parent(self, parent):
-        if not parent == None:
-            self.setParent(parent)
 
-
-class MainWindow(CustomWidget):
+class Sidebar(QWidget, UiFunctions):
     def __init__(self):
         super().__init__()
-        self.resize(500, 800)
-        self.move(300,300)
-        self.setWindowTitle('LeagueApp')
 
-        self.open_stylesheet('style/main.qss')
+        self.init_ui()
+
+    
+    def init_ui(self):
+        square = QFrame(self)
+        square.setGeometry(0,0,200,200)
+        square.setStyleSheet("background: red")
+
+        self.show()
+
+
+class Header(QWidget, UiFunctions):
+    def __init__(self):
+        super().__init__()
+
+        self.init_ui()
+
+
+    def init_ui(self):
+        square = QFrame(self)
+        square.setGeometry(0,0,200,200)
+        square.setStyleSheet("background: blue")
+
+        self.show()
+
+
+class Content(QWidget, UiFunctions):
+    def __init__(self):
+        super().__init__()
+
+        self.init_ui()
+
+
+    def init_ui(self):
+        square = QFrame(self)
+        square.setGeometry(0,0,200,200)
+        square.setStyleSheet("background: green")
 
         self.show()
         
 
-class Sidebar(CustomWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setGeometry(0,0,100,500)
+class CentralWidget(QWidget, UiFunctions):
+    """
+    Contains (currently) all of the UI. Just there for the
+    gridlayout
+    """
+    def __init__(self):
+        super().__init__()
 
-        self.open_stylesheet('style/sidebar.qss')
-        self.add_button()
+        self.init_ui()
+
+
+    def init_ui(self):
+        # horizontal grid contains sidebar and content
+        grid = QGridLayout(self)
+        grid.setSpacing(1)
+
+        sidebar = Sidebar()
+        content = Content()
+        header = Header()
+
+        grid.addWidget(header,  0, 0, 1, -1)
+        grid.addWidget(sidebar, 1, 0, 1,  1)
+        grid.addWidget(content, 1, 1, 1,  1)
 
         self.show()
 
-    def add_button(self):
-        btn = QPushButton('Yo', self)
-        btn.resize(btn.sizeHint())
-        btn.move(10,10)
 
+class MainWindow(QMainWindow, UiFunctions):
+    """
+    The container of the GUI.
+    Currently making it a QMainWindow doesn't do much. It is
+    mainly there to allow for a certain UI structure afaik:
+    https://doc.qt.io/qt-5/qmainwindow.html
+    
+    I don't see a reason not to use it.
+    """
+    def __init__(self):
+        super().__init__()
 
-class Header:
-    pass
+        self.init_ui()
 
-class Content:
-    pass
+    def init_ui(self):
+        self.open_stylesheet('data/main.qss')
+
+        central_widget = CentralWidget()
+        self.setCentralWidget(central_widget)
+        self.setGeometry(300,300,800,800)
+        self.setWindowTitle('LeagueApp')
+
+        self.show()

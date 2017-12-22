@@ -1,4 +1,5 @@
 QWidget
 {
-    background: white
+    background: black;
+    border-right: 1px solid white;
 }
