@@ -1,4 +1,5 @@
 QWidget
 {
-    background: green
+    font-family: CODE Bold;
+    font-size: 30px;
 }
