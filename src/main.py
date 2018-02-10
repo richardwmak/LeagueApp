@@ -1,23 +1,26 @@
 """ Main file """
 
 import datetime
+from   flask import Flask
 import logging
-from PyQt5.QtWidgets import QApplication
 import sys
-from view import MainWindow
 
-def main():
+app = Flask(__name__)
+
+
+def setup_app():
     # set up logging
     logging.basicConfig(filename='LeagueApp.log', level=logging.INFO)
     logging.info("\nSTART UP")
     logging.info("Date/time: %s\n" % (datetime.datetime.now()))
 
-    # UI stuff
-    app = QApplication(sys.argv)
+setup_app()
 
-    window = MainWindow()
+@app.route('/')
+def main_page():
+    
 
-    sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
-    main()
+    app.run()

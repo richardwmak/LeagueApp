@@ -15,6 +15,7 @@ data1 = data.ApiRequest("reeepicheeep", "EUW1")
 import json
 import logging
 import sqlite3
+from typing import Dict
 from   urllib.request import urlopen
 import urllib.error
 
@@ -30,7 +31,7 @@ class ApiRequest:
 # INITIALIZATION METHODS
 ################################################################################
 
-    def __init__(self, username, region):
+    def __init__(self, username: str, region: str):
         """
         Initializes various relevant variables (surprise, surprise)
 
@@ -165,7 +166,7 @@ class ApiRequest:
             self.update_champion()
 
 
-    def get_data_from_url(self, url):
+    def get_data_from_url(self, url: str) -> str:
         """
         Since data is pulled from Riot's API the same way
         basically every time, this function generalises it
@@ -275,7 +276,7 @@ class ApiRequest:
             iter_curr += 1
 
 
-    def get_account_data(self):
+    def get_account_data(self) -> str:
         """
         Method to get account information for a user
 
@@ -295,7 +296,7 @@ class ApiRequest:
 # INITIALIZATION METHODS OVER
 ################################################################################
 
-    def get_champion_mastery(self):
+    def get_champion_mastery(self) -> str:
         """
         Method that returns all data related to champion mastery
 
@@ -322,7 +323,7 @@ class ApiRequest:
         return mastery_data
 
 
-    def get_rank_data(self):
+    def get_rank_data(self) -> str:
         """
         Method that returns all data related to the users current rank
 
@@ -347,7 +348,7 @@ class Db:
     The database class that handles opening/closing db connections, and running
     and returning query results.
     """
-    def query(query = "", params = {}, db_name="data/league_data.db"):
+    def query(query = "": str, params = {}: Dict[str, str], db_name="data/league_data.db": str):
         """
         Run a query (also open and close the connection)
 
