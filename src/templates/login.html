@@ -7,7 +7,7 @@
 {% block content %}
 <div class="row text-center">
     <div class="col-md-12">
-        <form class="form-sign-in col-md-4 offset-md-4">
+        <form class="form-sign-in col-md-4 offset-md-4" action="{{ url_for("") }}">
             <h1 class="h3 font-weight-bold">LeagueApp</h1>
             <input type="text" id="inputUsername" class="form-control" placeholder="LoL username" required autofocus>
             <div class="dropdown">
