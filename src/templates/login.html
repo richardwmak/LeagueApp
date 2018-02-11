@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title%}Set your account{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <form class="sign-in col-md-4 offset-md-4">
+            <h1 class="h3 font-weight-bold">LeagueApp</h1>
+            <input type="text" id="inputUsername" class="form-control" placeholder="League of Legends username" required autofocus>
+            <div class="dropdown col-md-12">
+                <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="region-dropdown" data-toggle="dropdown">
+                    Choose your region
+                </a>
+                <div class="dropdown-menu">
+                    {% for region in region_list %}
+                        <a class="dropdown-item" href="#">{{ region }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
