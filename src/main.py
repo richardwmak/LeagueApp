@@ -3,6 +3,7 @@
 .\virtual\Scripts\python.exe .\src\main.py
 """
 
+from   data import ApiRequest
 import datetime
 import time
 from   flask import Flask, request, redirect, url_for, render_template, session
@@ -30,12 +31,13 @@ def main_page():
     if not "username" in session or not "region" in session:
         return redirect(url_for("login"))
     else:
-        return redirect(url_for("app"))
+        return redirect(url_for("stats"))
 
 
 @app.route("/login")
 def login():
     # hardcoded a list of regions, don't know a better way right now
+    # TODO: improve server names
     region_list = sorted(["RU", "KR", "BR1", "OC1", "JP1", "NA1", "EUN1", "EUW1", "TR1", "LA1", "LA2"])
     return render_template("login.html", region_list=region_list, timestamp=int(time.time()))
 
@@ -45,11 +47,11 @@ def set_info():
     session["username"] = request.form("username")
     session["region"] = request.form("region")
 
-    return redirect(url_for("app"))
+    return redirect(url_for("stats"))
 
 
-@app.route("/app")
-def app():
+@app.route("/stats")
+def stats():
     if not "username" in session or not "region" in session:
         return redirect(url_for("login"))
     else:

@@ -12,12 +12,11 @@ else:
 
 data1 = data.ApiRequest("reeepicheeep", "EUW1")
 """
-import json
+
 import logging
+import requests
 import sqlite3
-from typing import Dict
-from   urllib.request import urlopen
-import urllib.error
+from   typing import Dict
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -40,15 +39,21 @@ class ApiRequest:
             region: Account region
         """
 
-        self.api_key = "RGAPI-6a1c6e7c-367d-4d36-83b7-f754b9e1ee61"
-        self.username = username
-        self.region = region
+        self.api_key = "RGAPI-e7f9f9d4-20d7-4811-865f-4ce59d0efd04"
         self.version = None
 
         # self.initialize_db()
         # set_version() both checks the version and run and get_champion_list()
         # if the version is different
         # self.set_version()
+
+
+    def init_user(self, username: str, region: str):
+        """
+        Store user info
+        """
+        self.username = username
+        self.region = region
 
     
     def initialise_db(self):
@@ -123,11 +128,21 @@ class ApiRequest:
         # https://ddragon.leagueoflegends.com/api/versions.json is a list of all
         # version with the first entry being the current version
         try:
-            http_response = urlopen("https://ddragon.leagueoflegends.com/api/versions.json")
-            http_content = http_response.read().decode("utf-8")
-            data = json.loads(http_content)
-        except urllib.error.URLError as e:
-            print("An error has occured: " + e.reason)
+            http_response = requests.get("https://ddragon.leagueoflegends.com/api/versions.json")
+            data = http_response.json()
+
+        except requests.HTTPError as e:
+            logger.info("An HTTP error has occured: %s" % e.reason)
+            return False
+
+        except requests.Timeout as e:
+
+            logger.info("Connection timed out: %s" % e.reason)
+            return False
+
+        except requests.RequestException as e:
+            logger.info("Error processing HTTP request: %s" % e.reason)
+            return False
         riot_version = data[0]
 
         if riot_version == local_version:
@@ -166,7 +181,7 @@ class ApiRequest:
             self.update_champion()
 
 
-    def get_data_from_url(self, url: str) -> str:
+    def get_data_from_url(self, url: str):
         """
         Since data is pulled from Riot's API the same way
         basically every time, this function generalises it
@@ -185,15 +200,25 @@ class ApiRequest:
         """
         logger.info("Attempting to connect to Riot API.")
         try:
-            http_response = urlopen("https://" + self.region + ".api.riotgames.com/lol/" + url + "?api_key=" + self.api_key)
-            http_content = http_response.read().decode("utf-8")
-            data = json.loads(http_content)
+            http_response = requests.get(
+                "https://" + self.region + ".api.riotgames.com/lol/" + url,
+                headers={"X-Riot-Token": + self.api_key})
+            data = http_response.json()
 
             logger.info("Successfully retrieved data.")
             return data
-        except urllib.error.URLError as e:
-            logger.info("An error has occured: %s" % e.reason)
 
+        except requests.HTTPError as e:
+            logger.info("An HTTP error has occured: %s" % e.reason)
+            return False
+
+        except requests.Timeout as e:
+
+            logger.info("Connection timed out: %s" % e.reason)
+            return False
+
+        except requests.RequestException as e:
+            logger.info("Error processing HTTP request: %s" % e.reason)
             return False
 
 
@@ -348,7 +373,7 @@ class Db:
     The database class that handles opening/closing db connections, and running
     and returning query results.
     """
-    def query(query = "": str, params = {}: Dict[str, str], db_name="data/league_data.db": str):
+    def query(query = "": str, params = {}: Dict[str, str], db_name="league_data.db": str):
         """
         Run a query (also open and close the connection)
 
@@ -376,7 +401,7 @@ class Db:
 
         try:
             # open the connection
-            conn = sqlite3.connect(db_name)
+            conn = sqlite3.connect("data/" + db_name)
             conn.row_factory = dict_factory
             cursor = conn.cursor()
 
