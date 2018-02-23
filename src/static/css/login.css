@@ -36,6 +36,15 @@ body {
     margin-bottom: 0px;
     border-top-right-radius: 0px;
     border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.form-sign-in #submit {
+    width: 100%;
+    margin-bottom: 0px;
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
 }
 
 .form-sign-in .dropdown-menu {

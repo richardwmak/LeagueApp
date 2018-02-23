@@ -1,4 +1,5 @@
-"""Handles the API requests and data storage.
+"""
+Handles the API requests and data storage.
 
 Test commands:
 
@@ -181,12 +182,12 @@ class ApiRequest:
 
         https://REGION.api.riotgames.com/lol/API_CATEGORY?api_key=API_KEY
 
-        Args:
+        Args
             self.region
             self.api_key
             url: location of the data (i.e. API_CATEGORY)
 
-        Returns:
+        Returns
             data: the decoded json data
 
         """
@@ -217,9 +218,9 @@ class ApiRequest:
         """
         Get champion names and IDs and puts them into the champion table.
 
-        Args:
+        Args
 
-        Returns:
+        Returns
 
         """
         # the format of data is
@@ -295,10 +296,10 @@ class ApiRequest:
         """
         Get account information for a user.
 
-        Args:
+        Args
             self.username
 
-        Returns:
+        Returns
             account_data: dictionary with account data
 
         """
@@ -316,10 +317,10 @@ class ApiRequest:
         """
         Return all data related to champion mastery.
 
-        Args:
+        Args
             self.account_data["id"]
 
-        Returns:
+        Returns
             mastery_data - a dict with key champion ID
 
         """
@@ -343,10 +344,10 @@ class ApiRequest:
         """
         Return all data related to the users current rank.
 
-        Args:
+        Args
             self.account_data["id"]
 
-        Returns:
+        Returns
             rank_data - dict with information on ranked things
 
         """
@@ -369,15 +370,15 @@ class Db:
         """
         Run a query (also open and close the connection).
 
-        Args:
+        Args
             query - the query
             params - a dict with the parameters for the query
             db_name - database location relative to data.py
 
-        Returns:
+        Returns
             result: the query result as a dict of dicts
-                each subdict is a row
-                note: result == [] if sqlite finds no rows
+                    each subdict is a row
+                    note: result == [] if sqlite finds no rows
 
         """
         if not db_name.endswith(".db"):
