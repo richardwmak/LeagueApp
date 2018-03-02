@@ -1,26 +1,24 @@
 {% extends "layout.html" %}
-{% block title%}Set your account{% endblock %}
+{% block title%}Set your account{% endblock %} 
 {% block head %}
 {{ super() }}
 <link href="/static/css/login.css?{{ timestamp }}" rel="stylesheet">
+<script src="/static/js/login.js?{{ timestamp }}"></script>
 {% endblock %}
 {% block content %}
 <div class="row text-center">
     <div class="col-md-12">
-        <form class="form-sign-in col-md-4 offset-md-4" action="{{ url_for('set_info') }}">
+        <form class="form-sign-in col-md-4 offset-md-4">
             <h1 class="h3 font-weight-bold">LeagueApp</h1>
-            <input type="text" id="inputUsername" class="form-control" placeholder="LoL username" required autofocus>
-            <div class="dropdown">
-                <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="region-dropdown" data-toggle="dropdown">
-                    Choose your region
-                </a>
-                <div class="dropdown-menu">
-                    {% for region in region_list %}
-                        <a class="dropdown-item" href="#">{{ region }}</a>
-                    {% endfor %}
-                </div>
-            </div>
+            <input type="text" id="input-username" class="form-control" placeholder="LoL username" required autofocus>
+            <select class="form-control" id="region-select" required>
+                <option value="" selected>Choose your region</option>
+                {% for key, region in region_list.items() %}
+                    <option value={{ key }}>{{ region }}</option>
+                {% endfor %}
+            </select>
             <button class="btn btn-primary" id="submit">Submit</button>
+            <div class="alert alert-warning hidden" id="ajax-error-message"></div>
         </form>
     </div>
 </div>

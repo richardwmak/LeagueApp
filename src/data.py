@@ -14,10 +14,11 @@ else:
 data1 = data.ApiRequest("reeepicheeep", "EUW1")
 """
 
+from   .db import Db
+import configparser
 import logging
 import requests
-import sqlite3
-from   typing import Any, Dict
+from   typing import Tuple
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -41,19 +42,38 @@ class ApiRequest:
             username: League of Legends username
             region: Account region
         """
-        self.api_key = "RGAPI-e7f9f9d4-20d7-4811-865f-4ce59d0efd04"
+        config = configparser.ConfigParser()
+        config.read("secrets.ini")
+        self.api_key = config["api"]["key"]
         self.version = None
         self.account_data = []
-
-        # self.initialize_db()
-        # set_version() both checks the version and run and get_champion_list()
-        # if the version is different
-        # self.set_version()
 
     def init_user(self, username: str, region: str):
         """Store user info."""
         self.username = username
         self.region = region
+
+    def get_account_data(self) -> Tuple[str, bool]:
+        """
+        Get account information for a user.
+
+        Args
+            self.username
+
+        Returns
+            account_data: dictionary with account data
+
+        """
+        (data, status_code) = self.get_data_from_url(
+            "summoner/v3/summoners/by-name/" +
+            self.username)
+
+        if status_code == 200:
+            success = True
+        else:
+            success = False
+
+        return data, success
 
     def initialise_db(self):
         """Create empty database with relevant tables if they don't exist."""
@@ -125,15 +145,7 @@ class ApiRequest:
                 "https://ddragon.leagueoflegends.com/api/versions.json")
             data = http_response.json()
 
-        except requests.HTTPError as e:
-            logger.info("An HTTP error has occured: %s" % e.reason)
-            return False
-
-        except requests.Timeout as e:
-
-            logger.info("Connection timed out: %s" % e.reason)
-            return False
-
+        # TODO: consider if I want to rerun depending on result
         except requests.RequestException as e:
             logger.info("Error processing HTTP request: %s" % e.reason)
             return False
@@ -174,7 +186,7 @@ class ApiRequest:
 
             self.update_champion()
 
-    def get_data_from_url(self, url: str):
+    def get_data_from_url(self, url: str) -> Tuple[str, int]:
         """
         Get data from Riot API.
 
@@ -189,30 +201,37 @@ class ApiRequest:
 
         Returns
             data: the decoded json data
+            status_code: HTML status code, 0 if error
 
         """
         logger.info("Attempting to connect to Riot API.")
+        complete_url = "https://%s.api.riotgames.com/lol/%s" % (self.region, url)
+        logger.info("URL: %s" % complete_url)
         try:
             http_response = requests.get(
-                "https://" + self.region + ".api.riotgames.com/lol/" + url,
-                headers={"X-Riot-Token": + self.api_key})
+                complete_url,
+                headers={"X-Riot-Token": self.api_key})
             data = http_response.json()
+            status_code = http_response.status_code
 
-            logger.info("Successfully retrieved data.")
-            return data
+            if status_code is 200:
+                logger.info("Successfully retrieved data.")
+            else:
+                logger.info("Failed to retrieve data. HTTP error code: %s" % status_code)
+
+            return data, status_code
 
         except requests.HTTPError as e:
             logger.info("An HTTP error has occured: %s" % e)
-            return False
+            return None, 0
 
         except requests.Timeout as e:
-
             logger.info("Connection timed out: %s" % e)
-            return False
+            return None, 0
 
         except requests.RequestException as e:
             logger.info("Error processing HTTP request: %s" % e)
-            return False
+            return None, 0
 
     def update_champion(self):
         """
@@ -231,7 +250,8 @@ class ApiRequest:
         #     |-- champion_first_data
         #     |-- ...
         #     |-- champion_last_data
-        data = self.get_data_from_url("static-data/v3/champions")["data"]
+        (data, status_code) = self.get_data_from_url(
+            "static-data/v3/champions")["data"]
 
         # sort all the info by key
         riot_champion_list = {}
@@ -292,28 +312,12 @@ class ApiRequest:
                   " champions updated.")
             iter_curr += 1
 
-    def get_account_data(self) -> str:
-        """
-        Get account information for a user.
-
-        Args
-            self.username
-
-        Returns
-            account_data: dictionary with account data
-
-        """
-        data = self.get_data_from_url("summoner/v3/summoners/by-name/" +
-                                      self.username)
-
-        return data
-
 
 ###############################################################################
 # INITIALIZATION METHODS OVER
 ###############################################################################
 
-    def get_champion_mastery(self) -> Dict[Any, Any]:
+    def get_champion_mastery(self):
         """
         Return all data related to champion mastery.
 
@@ -324,7 +328,7 @@ class ApiRequest:
             mastery_data - a dict with key champion ID
 
         """
-        data = self.get_data_from_url(
+        (data, status_code) = self.get_data_from_url(
             "champion-mastery/v3/champion-masteries/by-summoner/" +
             str(self.account_data["id"]))
 
@@ -351,62 +355,11 @@ class ApiRequest:
             rank_data - dict with information on ranked things
 
         """
-        data = self.get_data_from_url("league/v3/positions/by-summoner/" +
-                                      str(self.account_data["id"]))
+        (data, status_code) = self.get_data_from_url(
+            "league/v3/positions/by-summoner/" +
+            str(self.account_data["id"]))
 
         # this returns an array with one entry so just
         # return the dict in there
 
         return data[0]
-
-
-class Db:
-    """Handle db connections/ return query results."""
-
-    def query(self,
-              query: str="",
-              params: Dict[str, str]={},
-              db_name: str="league_data.db"):
-        """
-        Run a query (also open and close the connection).
-
-        Args
-            query - the query
-            params - a dict with the parameters for the query
-            db_name - database location relative to data.py
-
-        Returns
-            result: the query result as a dict of dicts
-                    each subdict is a row
-                    note: result == [] if sqlite finds no rows
-
-        """
-        if not db_name.endswith(".db"):
-            db_name += ".db"
-
-        logger.info("Accessing database: %s" % (db_name))
-
-        def dict_factory(cursor, row):
-            d = {}
-            for idx, col in enumerate(cursor.description):
-                d[col[0]] = row[idx]
-            return d
-
-        try:
-            # open the connection
-            conn = sqlite3.connect("data/" + db_name)
-            conn.row_factory = dict_factory
-            cursor = conn.cursor()
-
-            cursor.execute(query, params)
-            result = cursor.fetchall()
-            conn.commit()
-            # close the connection
-        except sqlite3.Error as e:
-            logger.info("A database error has occurred: ", e.args[0])
-            return False
-
-        logger.info("Successfully ran query.")
-        logger.info("Database connection closed.")
-        conn.close()
-        return result
