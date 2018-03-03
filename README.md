@@ -7,3 +7,11 @@ way that looks good.
 # Steps
 
 1. Get the API to work.
+
+
+# Instructions
+    .\venv\Scripts\activate
+    cd src
+    $env:FLASK_APP="main.py"
+    $env:FLASK_DEBUG=1
+    flask run

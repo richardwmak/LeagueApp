@@ -22,9 +22,6 @@ from   typing import Tuple
 
 # set up logging
 logger = logging.getLogger(__name__)
-if not __name__ == "__main__":
-    # if not run from main, set up extra logging stuff
-    logging.basicConfig(filename='LeagueApp.log', level=logging.INFO)
 
 
 class ApiRequest:
@@ -35,12 +32,9 @@ class ApiRequest:
 ###############################################################################
 
     def __init__(self):
-        """
-        Initialize various relevant variables (surprise, surprise).
+        """Get api key from ini.
 
-        Args:
-            username: League of Legends username
-            region: Account region
+        TODO: somehow do this in a sensible way when in prod
         """
         config = configparser.ConfigParser()
         config.read("secrets.ini")
@@ -49,31 +43,27 @@ class ApiRequest:
         self.account_data = []
 
     def init_user(self, username: str, region: str):
-        """Store user info."""
+        """Set user variables.
+
+        Arguments:
+            username {str} --
+            region {str} --
+        """
         self.username = username
         self.region = region
 
-    def get_account_data(self) -> Tuple[str, bool]:
-        """
-        Get account information for a user.
+    def get_account_data(self) -> Tuple[str, int]:
+        """Request account data based on username and region.
 
-        Args
-            self.username
-
-        Returns
-            account_data: dictionary with account data
-
+        Returns:
+            Tuple[str, int] -- Tuple containing account data and the HTTP
+                status code
         """
         (data, status_code) = self.get_data_from_url(
             "summoner/v3/summoners/by-name/" +
             self.username)
 
-        if status_code == 200:
-            success = True
-        else:
-            success = False
-
-        return data, success
+        return data, status_code
 
     def initialise_db(self):
         """Create empty database with relevant tables if they don't exist."""
@@ -154,7 +144,7 @@ class ApiRequest:
         if riot_version == local_version:
             # if the versions are the same, we can assume everything has
             # updated just fine
-            print("LeagueApp is up to date.")
+            logger.info("LeagueApp is up to date.")
             return
         else:
             # if not, we need to update some stuff
@@ -180,9 +170,10 @@ class ApiRequest:
             result = Db.query(sql, params)
 
             if result is False:
-                print("Version could not be updated.")
+                logger.info("Version could not be updated.")
+                # TODO: raise exception
             else:
-                print("Version successfully updated.")
+                logger.info("Version successfully updated.")
 
             self.update_champion()
 
@@ -194,30 +185,29 @@ class ApiRequest:
 
         https://REGION.api.riotgames.com/lol/API_CATEGORY?api_key=API_KEY
 
-        Args
-            self.region
-            self.api_key
-            url: location of the data (i.e. API_CATEGORY)
+        Arguments:
+            self.region --
+            self.api_key --
+            url -- location of the data (i.e. API_CATEGORY)
 
-        Returns
-            data: the decoded json data
-            status_code: HTML status code, 0 if error
-
+        Returns:
+            Tuple[str, int] -- the decoded json data, HTML status code resp.
         """
         logger.info("Attempting to connect to Riot API.")
         complete_url = "https://%s.api.riotgames.com/lol/%s" % (self.region, url)
+        headers = {"X-Riot-Token": self.api_key}
         logger.info("URL: %s" % complete_url)
         try:
             http_response = requests.get(
                 complete_url,
-                headers={"X-Riot-Token": self.api_key})
+                headers=headers)
             data = http_response.json()
             status_code = http_response.status_code
 
             if status_code is 200:
                 logger.info("Successfully retrieved data.")
             else:
-                logger.info("Failed to retrieve data. HTTP error code: %s" % status_code)
+                logger.error("Failed to retrieve data. HTTP error code: %s" % status_code)
 
             return data, status_code
 

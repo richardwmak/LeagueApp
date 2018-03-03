@@ -6,9 +6,10 @@ Main file.
 
 from   .data import ApiRequest
 import datetime
-from   flask import Flask, request, redirect, url_for, render_template, session
+from   flask import Flask, request, redirect, url_for, render_template
 import json
 import logging
+import custom_session
 import time
 
 
@@ -19,7 +20,18 @@ app = Flask(__name__)
 app.secret_key = ('\xd5\x99\x98N\x1e\xac7\xc9{\x9d\xdc\xefN\xdf\xcbR\xfc\x8f' +
                   '\xfa$\xa1\xa7\xd7j')
 
+# initialise session
+session = custom_session.Session()
+try:
+    session.load_session()
+except custom_session.SessionLoadException():
+    logging.error("Failed to load session.")
+
 # Set up logging.
+# Clear old log:
+with open("LeagueApp.log", "w"):
+    pass
+
 logging.basicConfig(filename='LeagueApp.log', level=logging.INFO)
 logging.info("\nSTART UP")
 logging.info("Date/time: %s\n" % (datetime.datetime.now()))
@@ -61,28 +73,32 @@ def login():
 
 @app.route("/set_info", methods=["POST"])
 def set_info(api: ApiRequest = api_request_instance):
-    """Get the info from POST."""
+    """Check if user exists via ajax request.
+
+    Keyword Arguments:
+        api {ApiRequest} -- API request object of choice (default: {api_request_instance})
+    """
     username = request.json["username"]
     region = request.json["region"]
 
     # TODO: break out authorization
     api.init_user(username, region)
     (data, status_code) = api.get_account_data()
-    logging.info(data)
 
     if status_code is not 200:
         message = "This combination of username and password was not found."
         result = json.dumps({"success": False,
                              "message": message})
         session["logged_in"] = False
-        logging.info("test")
+        logging.info("Failed to log in.")
     else:
-        session["username"] = request.form("username")
-        session["region"] = request.form("region")
+        session["username"] = request.json["username"]
+        session["region"] = request.json["region"]
         session["logged_in"] = True
 
         result = json.dumps({"success": True,
                              "message": None})
+        logging.info("Successfully logged in.")
 
     return result
 
@@ -94,7 +110,9 @@ def stats():
 
     data.init_user(session["username"], session["region"])
 
+    # return render_template("stats.html",
+    #                        )
+
 
 if __name__ == "__main__":
     app.run()
-    app.debug = True
