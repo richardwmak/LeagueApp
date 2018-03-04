@@ -13,12 +13,12 @@ class Session:
     Handle sessions (because I want more control).
     """
 
-    def __init__(self):
+    def __init__(self, session_file_path: str="data/session.p") -> None:
         """
         Load session if it exists, otherwise make a new session.
         """
-        self.session = {}
-        self.session_file_path = "data/session.p"
+        self.session = {}  # type: dict
+        self.session_file_path = session_file_path
         if Path(self.session_file_path).is_file():
             self.load_session()
 
@@ -81,6 +81,20 @@ class Session:
             logger.error("Key doesn't exist.")
             raise SessionKeyException("Key doesn't exist.")
         return value
+
+    def check_key(self, key: str) -> bool:
+        """Check if key exists.
+
+        Arguments:
+            key {str} --
+
+        Returns:
+            bool -- True/false depending on existence.
+        """
+        if key in self.session:
+            return True
+        else:
+            return False
 
     def clear_session(self):
         """Delete the entire dict.
