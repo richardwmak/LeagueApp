@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title%}Stats{% endblock %} 
+{% block head %}
+{{ super() }}
+<link href="/static/css/stats.css?{{ timestamp }}" rel="stylesheet">
+<script src="/static/js/stats.js?{{ timestamp }}"></script>
+{% endblock %}
+{% block content %}
+{% endblock %}

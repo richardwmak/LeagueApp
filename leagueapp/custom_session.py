@@ -14,8 +14,10 @@ class Session:
     """
 
     def __init__(self, session_file_path: str="data/session.p") -> None:
-        """
-        Load session if it exists, otherwise make a new session.
+        """Load the initial session.
+
+        Keyword Arguments:
+            session_file_path {str} -- (default: {"data/session.p"})
         """
         self.session = {}  # type: dict
         self.session_file_path = session_file_path

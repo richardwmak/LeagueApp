@@ -46,7 +46,7 @@ api_request_instance = ApiRequest()
 @app.route("/")
 def main_page():
     """Route to login or main screen."""
-    if "logged_in" in session and session["logged_in"] is True:
+    if session.check_key("logged_in") and session.select_key("logged_in") is True:
         return redirect(url_for("stats"))
     else:
         return redirect(url_for("login"))
@@ -89,12 +89,12 @@ def set_info(api: ApiRequest = api_request_instance):
         message = "This combination of username and password was not found."
         result = json.dumps({"success": False,
                              "message": message})
-        session["logged_in"] = False
+        session.insert_key_value("logged_in", False)
         logging.info("Failed to log in.")
     else:
-        session["username"] = request.json["username"]
-        session["region"] = request.json["region"]
-        session["logged_in"] = True
+        session.insert_key_value("username", request.json["username"])
+        session.insert_key_value("region", request.json["region"])
+        session.insert_key_value("logged_in", request.json[True])
 
         result = json.dumps({"success": True,
                              "message": None})
@@ -108,10 +108,12 @@ def stats():
     """Load main page."""
     data = ApiRequest()
 
-    data.init_user(session["username"], session["region"])
+    curr_user = session.select_key("username")
+    curr_region = session.select_key("region")
 
-    # return render_template("stats.html",
-    #                        )
+    data.init_user(curr_user, curr_region)
+
+    return render_template("stats.html")
 
 
 if __name__ == "__main__":
