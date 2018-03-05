@@ -1,5 +1,5 @@
 import logging
-from   pathlib import Path
+import os
 import pickle
 from   typing import Any
 
@@ -21,7 +21,8 @@ class Session:
         """
         self.session = {}  # type: dict
         self.session_file_path = session_file_path
-        if Path(self.session_file_path).is_file():
+        # check if file exists
+        if os.path.isfile(session_file_path) is True:
             self.load_session()
 
     def save_session(self):
@@ -104,13 +105,13 @@ class Session:
         self.session.clear()
 
 
-class SessionLoadException(Exception):  # noqa
+class SessionLoadException(BaseException):  # noqa
     pass
 
 
-class SessionSaveException(Exception):  # noqa
+class SessionSaveException(BaseException):  # noqa
     pass
 
 
-class SessionKeyException(Exception):  # noqa
+class SessionKeyException(BaseException):  # noqa
     pass

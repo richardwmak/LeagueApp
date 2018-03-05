@@ -9,15 +9,11 @@
 <div class="row text-center">
     <div class="col-md-12">
         <form class="form-sign-in col-md-4 offset-md-4">
-            <h1 class="h3 font-weight-bold">LeagueApp</h1>
-            <input type="text" id="input-username" class="form-control" placeholder="LoL username" required autofocus>
-            <select class="form-control" id="region-select" required>
-                <option value="" selected>Choose your region</option>
-                {% for key, region in region_list.items() %}
-                    <option value={{ key }}>{{ region }}</option>
-                {% endfor %}
-            </select>
-            <button class="btn btn-primary" id="submit">Submit</button>
+            <h1 class="h3 font-weight-bold">last.fm visualiser</h1>
+            <p>Click the button below to be authorise this application with your last.fm account.</p>
+            <a href="{{ auth_url }}">
+                <img src="/static/img/lastfm_red.gif">
+            </a>
             <div class="alert alert-warning hidden" id="ajax-error-message"></div>
         </form>
     </div>

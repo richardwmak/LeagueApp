@@ -3,11 +3,10 @@ Main file.
 
 .\virtual\Scripts\python.exe .\src\main.py
 """
-
+from   .auth import GetAuth
 from   .data import ApiRequest
 import datetime
-from   flask import Flask, request, redirect, url_for, render_template
-import json
+from   flask import Flask, redirect, request, url_for, render_template
 import logging
 import custom_session
 import time
@@ -22,10 +21,6 @@ app.secret_key = ('\xd5\x99\x98N\x1e\xac7\xc9{\x9d\xdc\xefN\xdf\xcbR\xfc\x8f' +
 
 # initialise session
 session = custom_session.Session()
-try:
-    session.load_session()
-except custom_session.SessionLoadException():
-    logging.error("Failed to load session.")
 
 # Set up logging.
 # Clear old log:
@@ -38,6 +33,7 @@ logging.info("Date/time: %s\n" % (datetime.datetime.now()))
 
 # Create data object to use this session
 api_request_instance = ApiRequest()
+auth_instance = GetAuth()
 
 # currently, the way to force a cache refresh to grab updated css files is to
 # pass int(time.time()) and add that to the css file
@@ -53,54 +49,35 @@ def main_page():
 
 
 @app.route("/login")
-def login():
+def login(auth_instance: GetAuth = auth_instance):
     """Request user info."""
-    region_list = {"RU": "Russia", "KR": "Korea", "BR1": "Brazil",
-                   "OC1": "Oceania", "JP1": "Japan", "NA1": "NA",
-                   "EUN1": "EUN", "EUW1": "EUW", "TR1": "Turkey",
-                   "LA1": "LA1", "LA2": "LA2"}
-
-    # sort region_list
-    keys = sorted(region_list)
-    region_list_sorted = {}
-    for key in keys:
-        region_list_sorted[key] = region_list[key]
+    auth_url = auth_instance.generate_auth_url()
 
     return render_template("login.html",
-                           region_list=region_list_sorted,
+                           auth_url=auth_url,
                            timestamp=int(time.time()))
 
 
-@app.route("/set_info", methods=["POST"])
+@app.route("/auth")
+def auth_page():
+    """Handle last.fm authorisation.
+    """
+    pass
+
+
+@app.route("/set_info", methods=["GET"])
 def set_info(api: ApiRequest = api_request_instance):
-    """Check if user exists via ajax request.
+    """Set the token obtained from authorisation.
 
     Keyword Arguments:
-        api {ApiRequest} -- API request object of choice (default: {api_request_instance})
+        api {ApiRequest} -- (default: {api_request_instance})
     """
-    username = request.json["username"]
-    region = request.json["region"]
+    new_token = request.args.get("token")
 
-    # TODO: break out authorization
-    api.init_user(username, region)
-    (data, status_code) = api.get_account_data()
-
-    if status_code is not 200:
-        message = "This combination of username and password was not found."
-        result = json.dumps({"success": False,
-                             "message": message})
-        session.insert_key_value("logged_in", False)
-        logging.info("Failed to log in.")
-    else:
-        session.insert_key_value("username", request.json["username"])
-        session.insert_key_value("region", request.json["region"])
-        session.insert_key_value("logged_in", request.json[True])
-
-        result = json.dumps({"success": True,
-                             "message": None})
-        logging.info("Successfully logged in.")
-
-    return result
+    api_request_instance.set_token(new_token)
+    session.insert_key_value("logged_in", True)
+    
+    redirect(url_for("stats"))
 
 
 @app.route("/stats")

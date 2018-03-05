@@ -1,5 +1,5 @@
 import pytest
-import leagueapp.custom_session as custom_session
+import lastfm_visualiser.custom_session as custom_session
 
 
 class TestSessionMethods(object):
