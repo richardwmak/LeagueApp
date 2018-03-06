@@ -11,7 +11,7 @@ way that looks good.
 
 # Instructions
     .\venv\Scripts\activate
-    cd src
+    cd .\lastfm_visualiser\
     $env:FLASK_APP="main.py"
     $env:FLASK_DEBUG=1
-    flask run
+    python -m flask run

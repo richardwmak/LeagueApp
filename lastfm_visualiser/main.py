@@ -67,17 +67,26 @@ def auth_page():
 
 @app.route("/set_info", methods=["GET"])
 def set_info(api: ApiRequest = api_request_instance):
-    """Set the token obtained from authorisation.
+    """Get the token obtained from authorisation, then get the session key.
 
     Keyword Arguments:
         api {ApiRequest} -- (default: {api_request_instance})
     """
+    # set the token
     new_token = request.args.get("token")
 
-    api_request_instance.set_token(new_token)
+    # get the session key
+    param_dict = auth_instance.generate_getsession_param_dict(new_token)
+    (data, status_code) = api_request_instance.get_data_from_url(param_dict)
+
+    session_key = data["key"]
+    username = data["username"]
+
+    api_request_instance.set_session_key(session_key)
+    api_request_instance.set_username(username)
     session.insert_key_value("logged_in", True)
-    
-    redirect(url_for("stats"))
+
+    return redirect(url_for("stats"))
 
 
 @app.route("/stats")

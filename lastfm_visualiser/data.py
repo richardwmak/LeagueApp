@@ -1,6 +1,7 @@
-from   _version import __version__
+from  ._version import __version__
 import configparser
 import logging
+import os
 import requests
 from   typing import Tuple
 
@@ -23,19 +24,31 @@ class ApiRequest:
         TODO: somehow do this in a sensible way when in prod
         """
         config = configparser.ConfigParser()
-        config.read("secrets.ini")
+        secrets_path = os.path.dirname(__file__) + "\secrets.ini"
+
+        config.read(secrets_path)
 
         self.version = __version__
         self.api_key = config["api"]["key"]
-        self.token = ""
+        self.session_key = ""
+        self.username = ""
+        self.last_request = None
 
-    def set_token(self, new_token: str) -> None:
+    def set_session_key(self, session_key: str) -> None:
         """Store the last.fm token obtained from the auth request.
 
         Arguments:
             token {str} --
         """
-        self.token = new_token
+        self.session_key = session_key
+
+    def set_username(self, username: str) -> None:
+        """Set the username
+
+        Arguments:
+            username {str} --
+        """
+        self.username = username
 
     def init_user(self, username: str, region: str):
         """Set user variables.
@@ -46,32 +59,54 @@ class ApiRequest:
         """
         self.username = username
 
-    def get_data_from_url(self, url: str) -> Tuple[str, int]:
-        """
-        Get data from last.fm API.
+    def generate_api_url(self, method_params: dict = {}, use_json: bool = True) -> str:
+        """Generate the URL to be used for the api request.
 
-        It is always of the form
-
-        http://ws.audioscrobbler.com/2.0/
-
-        Arguments:
-            self.region --
-            self.api_key --
-            url -- location of the data (i.e. API_CATEGORY)
+        Keyword Arguments:
+            method_params {dict} -- parameters for the GET request (default: {{}})
+            use_json {bool} -- whether or not to use JSON instead of the default XML (default: {True})
 
         Returns:
-            Tuple[str, int] -- the decoded json data, HTML status code resp.
+            str -- the generated URL
+        """
+        param_dict = {}
+        if use_json is True:
+            param_dict["format"] = "json"
+
+        for key, value in method_params.items():
+            param_dict[key] = value
+
+        params = "?api_key=%s" % self.api_key
+        for key, value in param_dict.items():
+            params += "&%s=%s" % (key, value)
+
+        complete_url = "http://ws.audioscrobbler.com/2.0/%s" % params
+
+        return complete_url
+
+    def get_data_from_url(self, method_params: dict = {}, use_json: bool = True) -> Tuple[dict, int]:
+        """Perform the actual api request.
+
+        Keyword Arguments:
+            method_params {dict} -- parameters for the GET request (default: {{}})
+            use_json {bool} -- whether or not to use JSON (default: {True})
+
+        Returns:
+            Tuple[str, int] -- data/ response code
         """
         logger.info("Attempting to connect to last.fm API.")
-        complete_url = "http://ws.audioscrobbler.com/2.0/"  # TODO
-        headers = {"X-Riot-Token": self.api_key}
+
+        complete_url = self.generate_api_url(method_params, use_json)
+        headers = {"User-Agent": "lastfm_visualiser v%s" % self.version}
+
         logger.info("URL: %s" % complete_url)
         try:
-            http_response = requests.get(
-                complete_url,
-                headers=headers)
+            http_response = requests.get(url=complete_url,
+                                         headers=headers)
             data = http_response.json()
             status_code = http_response.status_code
+
+            if data[]
 
             if status_code is 200:
                 logger.info("Successfully retrieved data.")

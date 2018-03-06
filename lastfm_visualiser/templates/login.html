@@ -7,15 +7,12 @@
 {% endblock %}
 {% block content %}
 <div class="row text-center">
-    <div class="col-md-12">
-        <form class="form-sign-in col-md-4 offset-md-4">
-            <h1 class="h3 font-weight-bold">last.fm visualiser</h1>
-            <p>Click the button below to be authorise this application with your last.fm account.</p>
-            <a href="{{ auth_url }}">
-                <img src="/static/img/lastfm_red.gif">
-            </a>
-            <div class="alert alert-warning hidden" id="ajax-error-message"></div>
-        </form>
+    <div class="mb-12">
+        <h1 class="h3 font-weight-bold">last.fm visualiser</h1>
+        <p>Click the button below to be authorise this application with your last.fm account.</p>
+        <a href="{{ auth_url }}">
+            <img src="/static/img/lastfm_red.gif">
+        </a>
     </div>
 </div>
 {% endblock %}
