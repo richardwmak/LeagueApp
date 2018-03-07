@@ -3,7 +3,7 @@ Main file.
 
 .\virtual\Scripts\python.exe .\src\main.py
 """
-from   .auth import GetAuth
+from   .auth import Auth
 from   .data import ApiRequest
 import datetime
 from   flask import Flask, redirect, request, url_for, render_template
@@ -33,7 +33,7 @@ logging.info("Date/time: %s\n" % (datetime.datetime.now()))
 
 # Create data object to use this session
 api_request_instance = ApiRequest()
-auth_instance = GetAuth()
+auth_instance = Auth()
 
 # currently, the way to force a cache refresh to grab updated css files is to
 # pass int(time.time()) and add that to the css file
@@ -49,7 +49,7 @@ def main_page():
 
 
 @app.route("/login")
-def login(auth_instance: GetAuth = auth_instance):
+def login(auth_instance: Auth = auth_instance):
     """Request user info."""
     auth_url = auth_instance.generate_auth_url()
 
@@ -104,3 +104,4 @@ def stats():
 
 if __name__ == "__main__":
     app.run()
+    

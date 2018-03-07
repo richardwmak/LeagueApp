@@ -106,8 +106,6 @@ class ApiRequest:
             data = http_response.json()
             status_code = http_response.status_code
 
-            if data[]
-
             if status_code is 200:
                 logger.info("Successfully retrieved data.")
             else:

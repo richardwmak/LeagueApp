@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class GetAuth():
+class Auth():
     """Get last.fm authorisation.
     """
 
