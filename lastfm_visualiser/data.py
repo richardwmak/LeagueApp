@@ -1,4 +1,4 @@
-from  ._version import __version__
+from   _version import __version__
 import configparser
 import logging
 import os
@@ -43,7 +43,7 @@ class ApiRequest:
         self.session_key = session_key
 
     def set_username(self, username: str) -> None:
-        """Set the username
+        """Set the username.
 
         Arguments:
             username {str} --

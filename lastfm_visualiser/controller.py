@@ -3,8 +3,8 @@ Main file.
 
 .\virtual\Scripts\python.exe .\src\main.py
 """
-from   .auth import Auth
-from   .data import ApiRequest
+from   auth import Auth
+from   data import ApiRequest
 import datetime
 from   flask import Flask, redirect, request, url_for, render_template
 import logging
@@ -13,6 +13,10 @@ import time
 
 
 """Initialise app."""
+# Set up logging.
+# Clear old log:
+with open("LeagueApp.log", "w"):
+    pass
 
 # Set up Flask app.
 app = Flask(__name__)
@@ -22,10 +26,6 @@ app.secret_key = ('\xd5\x99\x98N\x1e\xac7\xc9{\x9d\xdc\xefN\xdf\xcbR\xfc\x8f' +
 # initialise session
 session = custom_session.Session()
 
-# Set up logging.
-# Clear old log:
-with open("LeagueApp.log", "w"):
-    pass
 
 logging.basicConfig(filename='LeagueApp.log', level=logging.INFO)
 logging.info("\nSTART UP")
@@ -102,6 +102,8 @@ def stats():
     return render_template("stats.html")
 
 
-if __name__ == "__main__":
-    app.run()
-    
+def start_server():
+    """Start the Flask server.
+    """
+    logging.info("Flask app started up.")
+    app.run(debug=True, port=5000)

@@ -105,3 +105,5 @@ setup.cfg
 secrets.ini
 setup.cfg
 important
+.pytest_cache/
+.vscode/
