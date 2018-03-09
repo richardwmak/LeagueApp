@@ -1,5 +1,5 @@
-from   _version import __version__
 import configparser
+from   lfm_vis._version import __version__
 import logging
 import os
 import requests

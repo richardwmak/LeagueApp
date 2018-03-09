@@ -3,12 +3,12 @@ Main file.
 
 .\virtual\Scripts\python.exe .\src\main.py
 """
-from   auth import Auth
-from   data import ApiRequest
 import datetime
 from   flask import Flask, redirect, request, url_for, render_template
+from   lfm_vis.auth import Auth
+from   lfm_vis.data import ApiRequest
+import lfm_vis.custom_session as custom_session
 import logging
-import custom_session
 import time
 
 
