@@ -1,7 +1,6 @@
 """
 Handles database access.
 """
-
 import logging
 import sqlite3
 from   typing import Dict
@@ -9,9 +8,6 @@ from   typing import Dict
 
 # set up logging
 logger = logging.getLogger(__name__)
-if not __name__ == "__main__":
-    # if not run from main, set up extra logging stuff
-    logging.basicConfig(filename='LeagueApp.log', level=logging.INFO)
 
 
 class Db:

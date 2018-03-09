@@ -1,7 +1,6 @@
+from   _version import __version__
 import configparser
-from   lfm_vis._version import __version__
 import logging
-import os
 import requests
 from   typing import Tuple
 
@@ -24,9 +23,7 @@ class ApiRequest:
         TODO: somehow do this in a sensible way when in prod
         """
         config = configparser.ConfigParser()
-        secrets_path = os.path.dirname(__file__) + "\secrets.ini"
-
-        config.read(secrets_path)
+        config.read("secrets.ini")
 
         self.version = __version__
         self.api_key = config["api"]["key"]

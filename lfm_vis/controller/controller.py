@@ -1,35 +1,34 @@
 r"""
-Main file.
-
-.\virtual\Scripts\python.exe .\src\main.py
+Controller.
 """
-import datetime
 from   flask import Flask, redirect, request, url_for, render_template
-from   lfm_vis.auth import Auth
-from   lfm_vis.data import ApiRequest
-import lfm_vis.custom_session as custom_session
+from   model.auth import Auth
+from   model.data import ApiRequest
+import model.custom_session as custom_session
 import logging
-import time
+from   view.login import login_render
 
 
 """Initialise app."""
 # Set up logging.
-# Clear old log:
-with open("LeagueApp.log", "w"):
-    pass
+logger = logging.getLogger(__name__)
 
 # Set up Flask app.
-app = Flask(__name__)
+app = Flask(__name__,
+            template_folder="../view/templates",
+            static_folder="../view/static")
 app.secret_key = ('\xd5\x99\x98N\x1e\xac7\xc9{\x9d\xdc\xefN\xdf\xcbR\xfc\x8f' +
                   '\xfa$\xa1\xa7\xd7j')
 
+
+file_handler = logging.FileHandler(filename="app.log")
+file_handler.setLevel(logging.DEBUG)
+app.logger.addHandler(file_handler)
+
+
 # initialise session
 session = custom_session.Session()
-
-
-logging.basicConfig(filename='LeagueApp.log', level=logging.INFO)
-logging.info("\nSTART UP")
-logging.info("Date/time: %s\n" % (datetime.datetime.now()))
+logger.info("Loaded session.")
 
 # Create data object to use this session
 api_request_instance = ApiRequest()
@@ -52,10 +51,7 @@ def main_page():
 def login(auth_instance: Auth = auth_instance):
     """Request user info."""
     auth_url = auth_instance.generate_auth_url()
-
-    return render_template("login.html",
-                           auth_url=auth_url,
-                           timestamp=int(time.time()))
+    return login_render(auth_url=auth_url)
 
 
 @app.route("/auth")
@@ -74,17 +70,9 @@ def set_info(api: ApiRequest = api_request_instance):
     """
     # set the token
     new_token = request.args.get("token")
-
-    # get the session key
-    param_dict = auth_instance.generate_getsession_param_dict(new_token)
-    (data, status_code) = api_request_instance.get_data_from_url(param_dict)
-
-    session_key = data["key"]
-    username = data["username"]
-
-    api_request_instance.set_session_key(session_key)
-    api_request_instance.set_username(username)
-    session.insert_key_value("logged_in", True)
+    auth_instance.get_session_key(new_token,
+                                  api_request_instance,
+                                  session)
 
     return redirect(url_for("stats"))
 
@@ -92,18 +80,11 @@ def set_info(api: ApiRequest = api_request_instance):
 @app.route("/stats")
 def stats():
     """Load main page."""
-    data = ApiRequest()
-
-    curr_user = session.select_key("username")
-    curr_region = session.select_key("region")
-
-    data.init_user(curr_user, curr_region)
-
     return render_template("stats.html")
 
 
 def start_server():
     """Start the Flask server.
     """
-    logging.info("Flask app started up.")
+    logger.info("Flask app started up.")
     app.run(debug=True, port=5000)

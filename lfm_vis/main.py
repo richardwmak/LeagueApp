@@ -1,4 +1,6 @@
-from   controller import start_server
+from   controller.controller import start_server
+import datetime
+import logging
 import requests
 from   threading import Thread
 from   time import sleep
@@ -28,6 +30,30 @@ def run_app():  # noqa
 
 
 if __name__ == "__main__":
+    # set up logging
+    # https://docs.python.org/3/howto/logging-cookbook.html
+    logger = logging.getLogger(__name__)
+    logger_werkzeug = logging.getLogger("werkzeug")
+    logger.setLevel(logging.DEBUG)
+    logger_werkzeug.setLevel(logging.DEBUG)
+
+    fh = logging.FileHandler("app.log")
+    fh.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+
+    logger.addHandler(fh)
+    logger_werkzeug.addHandler(fh)
+    logger.addHandler(ch)
+    logger_werkzeug.addHandler(ch)
+
+    logger.info("START UP")
+    logger.info("Date/time: %s\n" % (datetime.datetime.now()))
+
     start_server()
 
     # TODO: only use if not developing

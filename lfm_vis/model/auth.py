@@ -1,4 +1,6 @@
 import configparser
+from   model.custom_session import Session
+from   model.data import ApiRequest
 import hashlib
 import logging
 
@@ -50,3 +52,27 @@ class Auth():
                       "method": "auth.getSession"}
 
         return param_dict
+
+    def get_session_key(self,
+                        token: str,
+                        api_request_instance: ApiRequest,
+                        session: Session):
+        """Get the session key and username given a token.
+
+        Arguments:
+            token {str}
+            api_request_instance {ApiRequest}
+            session {Session}
+        """
+        # get the session key
+        param_dict = self.generate_getsession_param_dict(token)
+        (data, status_code) = api_request_instance.get_data_from_url(param_dict)
+
+        session_key = data["key"]
+        api_request_instance.set_session_key(session_key)
+
+        username = data["username"]
+        session.insert_key_value("username", username)
+        api_request_instance.set_username(username)
+
+        session.insert_key_value("logged_in", True)
