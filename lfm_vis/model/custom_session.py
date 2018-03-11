@@ -13,7 +13,7 @@ class Session:
     Handle sessions (because I want more control).
     """
 
-    def __init__(self, session_file_path: str="data/session.p") -> None:
+    def __init__(self, session_file_path: str="model/data/session.p") -> None:
         """Load the initial session.
 
         Keyword Arguments:
@@ -24,6 +24,14 @@ class Session:
         # check if file exists
         if os.path.isfile(session_file_path) is True:
             self.load_session()
+        else:
+            # make the file to check nothing is wrong
+            try:
+                with open(self.session_file_path, mode="w+"):
+                    pass
+            except EnvironmentError:
+                logger.error("Failed to create a session file.")
+                raise
 
     def save_session(self):
         """
@@ -46,6 +54,10 @@ class Session:
             except pickle.PickleError as e:
                 logger.error("Failed to load session.")
                 raise SessionLoadException("Failed to load session.")
+            except TypeError:
+                # a TypeError will occur if the file is empty as pickle expects
+                # a bytes-like object. In such a case, we just want an empty dict
+                self.session = {}
 
     def insert_key_value(self, key: str, value: Any = None):
         """Add key-value pair to the session.

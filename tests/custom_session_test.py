@@ -1,5 +1,5 @@
 import pytest
-import lastfm_visualiser.custom_session as custom_session
+import lfm_vis.model.custom_session as custom_session
 
 
 class TestSessionMethods(object):

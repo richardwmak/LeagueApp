@@ -1,5 +1,5 @@
 import pytest  # noqa
-import lastfm_visualiser.data as data
+import lfm_vis.model.data as data
 
 
 class TestDataMethods(object):  # noqa

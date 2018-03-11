@@ -30,7 +30,7 @@ class Auth():
             callback_url {str} -- url to send the user to after finishing authorization (default: {"http://localhost:5000/set_info"})
 
         Returns:
-            str -- [description]
+            str --
         """
         self.auth_url = "http://www.last.fm/api/auth/?api_key=%s&cb=%s" % (self.api_key, callback_url)
 
@@ -60,18 +60,24 @@ class Auth():
         """Get the session key and username given a token.
 
         Arguments:
-            token {str}
-            api_request_instance {ApiRequest}
-            session {Session}
+            token {str} --
+            api_request_instance {ApiRequest} --
+            session {Session} --
         """
         # get the session key
         param_dict = self.generate_getsession_param_dict(token)
         (data, status_code) = api_request_instance.get_data_from_url(param_dict)
 
-        session_key = data["key"]
+        if "error" in data:
+            logger.error("API request returned error: %s" % data["message"])
+            raise Exception("API request returned error: %s" % data["message"])
+
+        logger.info(data)
+
+        session_key = data["session"]["key"]
         api_request_instance.set_session_key(session_key)
 
-        username = data["username"]
+        username = data["session"]["name"]
         session.insert_key_value("username", username)
         api_request_instance.set_username(username)
 

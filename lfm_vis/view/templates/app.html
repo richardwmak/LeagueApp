@@ -2,7 +2,7 @@
 {% block title %}League App{% endblock %}
 {% block head %}
 {{ super() }}
-<link href="/static/css/app.css" rel="stylesheet">
+<link href="/static/css/app.css?{{ timestamp }}" rel="stylesheet">
 {% endblock %}
 {% block content %}
 <ul class="nav justify-content-center">
