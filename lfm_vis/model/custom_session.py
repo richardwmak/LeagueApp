@@ -1,5 +1,4 @@
 import logging
-import os
 import pickle
 from   typing import Any
 
@@ -22,22 +21,18 @@ class Session:
         self.session = {}  # type: dict
         self.session_file_path = session_file_path
         # check if file exists
-        if os.path.isfile(session_file_path) is True:
+        try:
             self.load_session()
-        else:
-            # make the file to check nothing is wrong
-            try:
-                with open(self.session_file_path, mode="w+"):
-                    pass
-            except EnvironmentError:
-                logger.error("Failed to create a session file.")
-                raise
+        except OSError:
+            pass
+        except EOFError:
+            self.session = {}
 
     def save_session(self):
         """
         Save the session dict using pickle.
         """
-        with open(self.session_file_path, mode="w") as f:
+        with open(self.session_file_path, mode="wb") as f:
             try:
                 pickle.dump(self.session, f)
             except pickle.PickleError as e:
@@ -48,16 +43,23 @@ class Session:
         """
         Load the session dict using pickle.
         """
-        with open(self.session_file_path, mode="r") as f:
-            try:
-                self.session = pickle.load(f)
-            except pickle.PickleError as e:
-                logger.error("Failed to load session.")
-                raise SessionLoadException("Failed to load session.")
-            except TypeError:
-                # a TypeError will occur if the file is empty as pickle expects
-                # a bytes-like object. In such a case, we just want an empty dict
-                self.session = {}
+        try:
+            with open(self.session_file_path, mode="rb") as f:
+                try:
+                    self.session = pickle.load(f)
+                except pickle.PickleError as e:
+                    logger.error("Failed to load session.")
+                    raise SessionLoadException("Failed to load session.")
+                except TypeError:
+                    # a TypeError will occur if the file is empty as pickle expects
+                    # a bytes-like object. In such a case, we just want an empty dict
+                    self.session = {}
+                except EOFError:
+                    logger.error(repr(EOFError))
+                    raise
+        except OSError:
+            logger("Failed to open session.p")
+            raise
 
     def insert_key_value(self, key: str, value: Any = None):
         """Add key-value pair to the session.
@@ -70,6 +72,7 @@ class Session:
         """
         # TODO: change behaviour depending on whether key exists?
         self.session[key] = value
+        self.save_session()
 
     def delete_key(self, key: str):
         """Delete a key-value pair.
@@ -80,6 +83,7 @@ class Session:
         # None is specified because otherwise a KeyError is raised if given key
         # does not exist.
         self.session.pop(key, None)
+        self.save_session()
 
     def select_key(self, key: str) -> Any:
         """Return value given a key.
@@ -115,6 +119,7 @@ class Session:
         """Delete the entire dict.
         """
         self.session.clear()
+        self.save_session()
 
 
 class SessionLoadException(BaseException):  # noqa
