@@ -5,7 +5,7 @@ from   flask import Blueprint, redirect, request, url_for, render_template
 import logging
 import os
 from   model.auth import Auth
-from   model.data import ApiRequest
+from   model.api import ApiRequest
 import model.custom_session as custom_session
 import sys
 from   view.login import login_render

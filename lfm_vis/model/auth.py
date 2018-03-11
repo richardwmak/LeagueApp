@@ -1,6 +1,6 @@
 import configparser
 from   model.custom_session import Session
-from   model.data import ApiRequest
+from   model.api import ApiRequest
 import hashlib
 import logging
 

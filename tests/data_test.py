@@ -1,5 +1,5 @@
 import pytest  # noqa
-import lfm_vis.model.data as data
+import lfm_vis.model.api as data
 
 
 class TestDataMethods(object):  # noqa
