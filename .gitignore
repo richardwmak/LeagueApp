@@ -106,4 +106,4 @@ secrets.ini
 setup.cfg
 important
 .pytest_cache/
-.vscode/
+/lfm_vis/model/test_requests
