@@ -79,6 +79,5 @@ class Auth():
 
         username = data["session"]["name"]
         session.insert_key_value("username", username)
-        api_request_instance.set_username(username)
 
         session.insert_key_value("logged_in", True)

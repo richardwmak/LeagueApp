@@ -28,7 +28,6 @@ class ApiRequest:
         self.version = __version__
         self.api_key = config["api"]["key"]
         self.session_key = ""
-        self.username = ""
         self.last_request = None
 
     def set_session_key(self, session_key: str) -> None:
@@ -39,28 +38,11 @@ class ApiRequest:
         """
         self.session_key = session_key
 
-    def set_username(self, username: str) -> None:
-        """Set the username.
-
-        Arguments:
-            username {str} --
-        """
-        self.username = username
-
-    def init_user(self, username: str, region: str):
-        """Set user variables.
-
-        Arguments:
-            username {str} --
-            region {str} --
-        """
-        self.username = username
-
-    def generate_api_url(self, method_params: dict = {}, use_json: bool = True) -> str:
+    def generate_api_url(self, param_dict: dict = {}, use_json: bool = True) -> str:
         """Generate the URL to be used for the api request.
 
         Keyword Arguments:
-            method_params {dict} -- parameters for the GET request (default: {{}})
+            param_dict {dict} -- parameters for the GET request (default: {{}})
             use_json {bool} -- whether or not to use JSON instead of the default XML (default: {True})
 
         Returns:
@@ -70,9 +52,6 @@ class ApiRequest:
         if use_json is True:
             param_dict["format"] = "json"
 
-        for key, value in method_params.items():
-            param_dict[key] = value
-
         params = "?api_key=%s" % self.api_key
         for key, value in param_dict.items():
             params += "&%s=%s" % (key, value)
@@ -81,11 +60,11 @@ class ApiRequest:
 
         return complete_url
 
-    def get_data_from_url(self, method_params: dict = {}, use_json: bool = True) -> Tuple[dict, int]:
+    def get_data_from_url(self, param_dict: dict = {}, use_json: bool = True) -> Tuple[dict, int]:
         """Perform the actual api request.
 
         Keyword Arguments:
-            method_params {dict} -- parameters for the GET request (default: {{}})
+            param_dict {dict} -- parameters for the GET request (default: {{}})
             use_json {bool} -- whether or not to use JSON (default: {True})
 
         Returns:
@@ -93,7 +72,7 @@ class ApiRequest:
         """
         logger.info("Attempting to connect to last.fm API.")
 
-        complete_url = self.generate_api_url(method_params, use_json)
+        complete_url = self.generate_api_url(param_dict, use_json)
         headers = {"User-Agent": "lastfm_visualiser v%s" % self.version}
 
         logger.info("URL: %s" % complete_url)
