@@ -1,12 +1,6 @@
-# LeagueApp
+# lfm_vis
 
-This is intended to be a simple app that uses the Riot API
-to download and parse data for a user and display it in a
-way that looks good.
-
-# Steps
-
-1. Get the API to work.
+Use the last.fm api to analyse listening patterns.
 
 
 # Instructions
@@ -15,9 +9,11 @@ Navigate to the root folder.
 
 ### Ubuntu
     python3.6 -m venv venv
+    source venv/bin/activate
     pip install -r requirements.txt
 ### Windows
     python -m venv venv
+    .\venv\Script\activate
     pip install -r requirements.txt
 
 ## Starting the flask server
@@ -26,7 +22,6 @@ Navigate to the root folder.
     source venv/bin/activate
     cd lfm_vis
     python -m main
-    
 ### Windows
     .\venv\Scripts\activate
     cd .\lfm_vis\
