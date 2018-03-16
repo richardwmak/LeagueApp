@@ -38,28 +38,6 @@ class ApiRequest:
         """
         self.session_key = session_key
 
-    def generate_api_url(self, param_dict: dict = {}, use_json: bool = True) -> str:
-        """Generate the URL to be used for the api request.
-
-        Keyword Arguments:
-            param_dict {dict} -- parameters for the GET request (default: {{}})
-            use_json {bool} -- whether or not to use JSON instead of the default XML (default: {True})
-
-        Returns:
-            str -- the generated URL
-        """
-        param_dict = {}
-        if use_json is True:
-            param_dict["format"] = "json"
-
-        params = "?api_key=%s" % self.api_key
-        for key, value in param_dict.items():
-            params += "&%s=%s" % (key, value)
-
-        complete_url = "http://ws.audioscrobbler.com/2.0/%s" % params
-
-        return complete_url
-
     def get_data_from_url(self, param_dict: dict = {}, use_json: bool = True) -> Tuple[dict, int]:
         """Perform the actual api request.
 
@@ -70,14 +48,17 @@ class ApiRequest:
         Returns:
             Tuple[str, int] -- data/ response code
         """
+        base_url = "http://ws.audioscrobbler.com/2.0/"
+        param_dict["api_key"] = self.api_key
+        if use_json is True:
+            param_dict["format"] = "json"
+
         logger.info("Attempting to connect to last.fm API.")
-
-        complete_url = self.generate_api_url(param_dict, use_json)
         headers = {"User-Agent": "lastfm_visualiser v%s" % self.version}
-
-        logger.info("URL: %s" % complete_url)
+        
         try:
-            http_response = requests.get(url=complete_url,
+            http_response = requests.get(url=base_url,
+                                         params=param_dict,
                                          headers=headers)
             data = http_response.json()
             status_code = http_response.status_code
