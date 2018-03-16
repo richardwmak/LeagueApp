@@ -106,5 +106,5 @@ secrets.ini
 setup.cfg
 important
 .pytest_cache/
-/lfm_vis/model/test_requests
-/lfm_vis/model/data/session.p
+lfm_vis/model/test_requests
+lfm_vis/model/data/session.p

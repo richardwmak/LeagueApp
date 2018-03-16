@@ -76,6 +76,7 @@ class Auth():
 
         session_key = data["session"]["key"]
         api_request_instance.set_session_key(session_key)
+        session.insert_key_value("session_key", session_key)
 
         username = data["session"]["name"]
         session.insert_key_value("username", username)
