@@ -23,10 +23,8 @@ class Session:
         # check if file exists
         try:
             self.load_session()
-        except OSError:
+        except (OSError, EOFError):
             pass
-        except EOFError:
-            self.session = {}
 
     def save_session(self):
         """
@@ -58,7 +56,7 @@ class Session:
                     logger.error(repr(EOFError))
                     raise
         except OSError:
-            logger("Failed to open session.p")
+            logger.info("Failed to open session.p")
             raise
 
     def insert_key_value(self, key: str, value: Any = None):
