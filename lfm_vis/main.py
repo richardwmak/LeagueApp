@@ -24,9 +24,5 @@ if __name__ == "__main__":
                 static_folder="view/static",
                 template_folder="view/templates")
     app.register_blueprint(main_app)
-    
+
     app.run(debug=True, port=5000)
-
-    # TODO: only use if not developing
-
-    # run_app()

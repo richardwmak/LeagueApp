@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block title%}Downloading info.{% endblock %} 
+{% block head %}
+{{ super() }}
+<link href="/static/css/get_info.css?{{ timestamp }}" rel="stylesheet">
+<script src="/static/js/get_info.js?{{ timestamp }}"></script>
+{% endblock %}
+{% block content %}
+<div class="rounded-edge row text-center">
+    <div class="mb-12">
+        <h2>Downloading your last.fm scrobbles.</h2>
+        <div class="progress" role="progressbar"></div>
+        <div class="hidden" id="get_info_message"></div>
+    </div>
+</div>
+{% endblock %}
