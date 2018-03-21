@@ -2,6 +2,7 @@ from   _version import __version__
 import configparser
 import logging
 import requests
+from   tools.decorators import retry
 from   typing import Tuple
 
 # set up logging
@@ -38,6 +39,7 @@ class ApiRequest:
         """
         self.session_key = session_key
 
+    @retry(3, 1, requests.Timeout)
     def get_data_from_url(self, param_dict: dict = {}, use_json: bool = True) -> Tuple[dict, int]:
         """Perform the actual api request.
 
@@ -55,7 +57,7 @@ class ApiRequest:
 
         logger.info("Attempting to connect to last.fm API.")
         headers = {"User-Agent": "lastfm_visualiser v%s" % self.version}
-        
+
         try:
             http_response = requests.get(url=base_url,
                                          params=param_dict,
