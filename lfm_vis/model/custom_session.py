@@ -1,7 +1,8 @@
+from datetime import datetime
 import logging
-import pickle
-from   typing import Any
-
+import sqlite3
+from typing import Any, Tuple
+from model.db import Db
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -12,121 +13,144 @@ class Session:
     Handle sessions (because I want more control).
     """
 
-    def __init__(self, session_file_path: str="model/data/session.p") -> None:
-        """Load the initial session.
+    def __init__(self) -> None:
+        """Load the Db class, initialise table.
+        """
+        self.db = Db()
+        self.init_db()
 
-        Keyword Arguments:
-            session_file_path {str} -- (default: {"data/session.p"})
+    def init_db(self) -> Any:
+        """Initialise the session db if it doesn't exist.
         """
-        self.session = {}  # type: dict
-        self.session_file_path = session_file_path
-        # check if file exists
-        try:
-            self.load_session()
-        except (OSError, EOFError):
-            pass
+        sql = """
+            CREATE TABLE IF NOT EXISTS
+                session
+                (
+                    key TEXT UNIQUE,
+                    value TEXT,
+                    date_last_access TIMESTAMP,
+                    PRIMARY KEY (key)
+                )
+            """
+        self.query(sql)
 
-    def save_session(self):
-        """
-        Save the session dict using pickle.
-        """
-        with open(self.session_file_path, mode="wb") as f:
-            try:
-                pickle.dump(self.session, f)
-            except pickle.PickleError as e:
-                logger.error("Failed to save session.")
-                raise SessionSaveException("Failed to save session.")
+    def query(self, sql: str, params: Tuple = None, fetchall: bool = True) -> Any:
+        """Run a db query with the given parameters.
 
-    def load_session(self):
-        """
-        Load the session dict using pickle.
-        """
-        try:
-            with open(self.session_file_path, mode="rb") as f:
-                try:
-                    self.session = pickle.load(f)
-                except pickle.PickleError as e:
-                    logger.error("Failed to load session.")
-                    raise SessionLoadException("Failed to load session.")
-                except TypeError:
-                    # a TypeError will occur if the file is empty as pickle expects
-                    # a bytes-like object. In such a case, we just want an empty dict
-                    self.session = {}
-                except EOFError:
-                    logger.error(repr(EOFError))
-                    raise
-        except OSError:
-            logger.info("Failed to open session.p")
-            raise
-
-    def insert_key_value(self, key: str, value: Any = None):
-        """Add key-value pair to the session.
+        Exists to make the functions less verbose since we always need this.
 
         Arguments:
-            key {str} --
+            sql {str} -- Query.
 
         Keyword Arguments:
-            value {Any} -- (default: {None})
+            params -- Single parameter/ tuple of parameters (default: {None})
+            fetchall {bool} -- Whether to fetchall() or fetchone() (default: {True})
         """
-        # TODO: change behaviour depending on whether key exists?
-        self.session[key] = value
-        self.save_session()
+        try:
+            result = self.db.query(sql, params, fetchall)
+            return result
+        except sqlite3.Error:
+            raise
 
-    def delete_key(self, key: str):
+    def insert_key_value(self, key: str, value: Any) -> None:
+        """Create a new key-value pair or update otherwise.
+
+        Arguments:
+            key {str} -- [description]
+
+        Keyword Arguments:
+            value {Any} -- [description] (default: {None})
+        """
+        time = datetime.now()
+        # check if the key already exists
+        if not self.check_key(key):
+            sql = """
+                INSERT INTO
+                    session
+                VALUES
+                (?, ?, ?)
+            """
+            params_insert = (key, value, time)
+            self.query(sql, params_insert)
+        else:
+            sql = """
+                UPDATE
+                    session
+                SET
+                    value = ?,
+                    date_last_access = ?
+                WHERE
+                    key = ?
+            """
+            params_update = (value, time, key)
+            self.query(sql, params_update)
+
+    def delete_key(self, key: str) -> None:
         """Delete a key-value pair.
 
         Arguments:
             key {str} --
         """
-        # None is specified because otherwise a KeyError is raised if given key
-        # does not exist.
-        self.session.pop(key, None)
-        self.save_session()
+        sql = """
+            DELETE FROM
+                session
+            WHERE
+                key = ?
+        """
+        params = (key,)
+        self.query(sql, params)
 
     def select_key(self, key: str) -> Any:
-        """Return value given a key.
+        """Get the value of given a key.
 
         Arguments:
             key {str} --
-
-        Returns:
-            value {Any} -- the value for the key
         """
+        sql = """
+            SELECT
+                value
+            FROM
+                session
+            WHERE
+                key = ?
+        """
+        params = (key,)
+
+        value = self.query(sql, params)
         try:
-            value = self.session[key]
-        except KeyError as e:
-            logger.error("Key doesn't exist.")
-            raise SessionKeyException("Key doesn't exist.")
-        return value
+            return value[0][0]
+        except IndexError as e:
+            logger.error(repr(e))
+            raise
 
     def check_key(self, key: str) -> bool:
-        """Check if key exists.
+        """Check whether a key exists.
 
         Arguments:
             key {str} --
-
-        Returns:
-            bool -- True/false depending on existence.
         """
-        if key in self.session:
-            return True
-        else:
+        sql = """
+            SELECT
+                count(*)
+            FROM
+                session
+            WHERE
+                key = ?
+        """
+        params = (key,)
+
+        result = self.query(sql, params, False)
+        if result[0] == 0:
             return False
+        else:
+            return True
 
-    def clear_session(self):
-        """Delete the entire dict.
+    def clear_session(self) -> None:
+        """Delete all session info (i.e. drop the table).
         """
-        self.session.clear()
-        self.save_session()
+        sql = """
+            DROP TABLE IF EXISTS
+                session
+        """
 
-
-class SessionLoadException(BaseException):  # noqa
-    pass
-
-
-class SessionSaveException(BaseException):  # noqa
-    pass
-
-
-class SessionKeyException(BaseException):  # noqa
-    pass
+        self.query(sql)

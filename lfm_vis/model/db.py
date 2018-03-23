@@ -3,7 +3,7 @@ Handles database access.
 """
 import logging
 import sqlite3
-from   typing import List
+from typing import Any, Tuple
 
 
 # set up logging
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class Db:
     """Handle db connections/ return query results."""
 
-    def __init__(self, db_name: str="lfm_vis_data.db") -> None:
+    def __init__(self, db_name: str = "lfm_vis_data.db") -> None:
         """Initialise class.
 
         Keyword Arguments:
@@ -21,11 +21,13 @@ class Db:
         """
         self.db_name = db_name
         self.open_connection = False
+        self.conn = None  # type: Any
+        self.cursor = None  # type: Any
         # very naive input checking
         if not self.db_name.endswith(".db"):
             self.db_name += ".db"
 
-    def connect(self):
+    def connect(self) -> None:
         """Open database connection.
         """
         if self.open_connection is True:
@@ -35,12 +37,12 @@ class Db:
         try:
             self.conn = sqlite3.connect("model/data/" + self.db_name)
         except sqlite3.Error as e:
-            logger.error("Failed to open database connection: %s" % repr(e))
+            logger.error("Failed to open database connection: %s", repr(e))
             raise
 
         self.open_connection = True
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         """Close database connection.
         """
         if self.open_connection is False:
@@ -50,14 +52,14 @@ class Db:
         try:
             self.conn.close()
         except sqlite3.Error as e:
-            logger.error("Failed to close database connection: %s" % repr(e))
+            logger.error("Failed to close database connection: %s", repr(e))
             raise
 
         self.open_connection = False
 
     def execute_query(self,
                       sql: str,
-                      params=None):
+                      params: Tuple = None) -> None:
         """Execute the query.
         """
         if self.open_connection is False:
@@ -67,37 +69,50 @@ class Db:
         try:
             if params is None:
                 self.cursor.execute(sql)
-            elif type(params) is list:
+            elif isinstance(params, list):
                 self.cursor.executemany(sql, params)
             else:
                 self.cursor.execute(sql, params)
         except sqlite3.Error as e:
-            logger.error("Failed to execute query: %s" % repr(e))
+            logger.error("Failed to execute query: %s", repr(e))
             raise
 
         try:
             self.conn.commit()
         except sqlite3.Error as e:
-            logger.error("Failed to commit query: %s" % repr(e))
+            logger.error("Failed to commit query: %s", repr(e))
             raise
 
-    def fetch_results(self) -> List:
-        """Return query results.
+    def fetch_results_all(self) -> Any:
+        """Return query results using fetchall().
         """
         try:
             return self.cursor.fetchall()
         except sqlite3.Error as e:
-            logger.error("Failed to fetch results: %s" % repr(e))
+            logger.error("Failed to fetch results: %s", repr(e))
+            raise
+
+    def fetch_results_one(self) -> Any:
+        """Return query results using fetchone().
+        """
+        try:
+            return self.cursor.fetchone()
+        except sqlite3.Error as e:
+            logger.error("Failed to fetch results: %s", repr(e))
             raise
 
     def query(self,
-              sql: str="",
-              params=None) -> List:
+              sql: str = "",
+              params: Tuple = None,
+              fetchall: bool = True) -> Any:
         """Shorthand for running a full query.
         """
         self.connect()
         self.execute_query(sql, params)
-        results = self.fetch_results()
+        if fetchall:
+            results = self.fetch_results_all()
+        else:
+            results = self.fetch_results_one()
         self.disconnect()
 
         return results
