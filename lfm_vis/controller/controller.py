@@ -1,91 +1,76 @@
 r"""
 Controller.
 """
-from   flask import Blueprint, redirect, request, url_for, render_template
 import logging
-import os
-from   model.auth import Auth
-from   model.api import ApiRequest
-import model.custom_session as custom_session
-import sys
-from   time import time
-from   view.login import login_render
+from time import time
+from typing import Any
 
-"""Initialise app."""
+from flask import Blueprint, redirect, request, url_for, render_template
+from model.auth import Auth
+from model.api import ApiRequest
+from model.custom_session import Session
+from view.login import login_render
+
 # Set up logging.
 logger = logging.getLogger(__name__)
 
 # Set up Flask blueprint
-parent_folder = os.path.dirname(os.path.abspath(__file__))
-main_app = Blueprint("main_app",
-                     __name__)
+MAIN_APP = Blueprint("MAIN_APP", __name__)
 
 # initialise session
-try:
-    session_inst = custom_session.Session()
-except IOError as e:
-    logger.error(repr(e))
-    # TODO: probably fix this sys.exit()...
-    sys.exit()
+SESSION = Session()
 
 logger.info("Loaded session.")
 
 # Create data object to use this session
-api_inst = ApiRequest()
-auth_inst = Auth()
+API = ApiRequest()
+AUTH = Auth()
 
 # currently, the way to force a cache refresh to grab updated css files is to
 # pass int(time.time()) and add that to the css file
 
 
-@main_app.route("/")
-def main_page():
+@MAIN_APP.route("/")
+def main_page(session: Session = SESSION) -> Any:
     """Route to login or main screen."""
-    if session_inst.check_key("data_downloaded") and session_inst.select_key("data_downloaded"):
-        return redirect(url_for("main_app.stats"))
-    elif session_inst.check_key("logged_in") and session_inst.select_key("logged_in"):
-        return redirect(url_for("main_app.get_info"))
+    if session.check_key("data_downloaded") and session.select_key(
+            "data_downloaded"):
+        return redirect(url_for("MAIN_APP.stats"))
+    elif session.check_key("logged_in") and session.select_key("logged_in"):
+        return redirect(url_for("MAIN_APP.get_info"))
     else:
-        return redirect(url_for("main_app.login"))
+        return redirect(url_for("MAIN_APP.login"))
 
 
-@main_app.route("/login")
-def login(auth_inst: Auth = auth_inst):
+@MAIN_APP.route("/login")
+def login(auth: Auth = AUTH) -> Any:
     """Request user info."""
-    auth_url = auth_inst.generate_auth_url()
+    auth_url = auth.generate_auth_url()
     return login_render(auth_url=auth_url)
 
 
-@main_app.route("/set_info", methods=["GET"])
-def set_info(api: ApiRequest = api_inst):
+@MAIN_APP.route("/set_info", methods=["GET"])
+def set_info(auth: Auth = AUTH) -> Any:
     """Get the token obtained from authorisation, then get the session key.
 
     Keyword Arguments:
-        api {ApiRequest} -- (default: {api_inst})
+        api {ApiRequest} -- (default: {API})
     """
     # set the token
     new_token = request.args.get("token")
-    auth_inst.get_session_key(new_token,
-                              api_inst,
-                              session_inst)
+    auth.get_session_key(new_token, API, SESSION)
 
-    return redirect(url_for("main_app.get_info"))
+    return redirect(url_for("MAIN_APP.get_info"))
 
 
-@main_app.route("/get_info")
-def get_info(api: ApiRequest=api_inst,
-             session: custom_session.Session=session_inst):
+@MAIN_APP.route("/get_info")
+def get_info() -> Any:
     """Load the page that displays while user info is getting fetched.
-
-    Keyword Arguments:
-        api {ApiRequest} -- (default: {api_inst})
-        session {custom_session.Session} -- (default: {session_inst})
     """
-    return render_template("get_info.html",
-                           timestamp=time())
+    return render_template("get_info.html", timestamp=time())
 
 
-@main_app.route("/stats")
-def stats():
+@MAIN_APP.route("/stats")
+def stats() -> Any:
     """Load main page."""
-    return render_template("main_app.stats.html")
+    return render_template("MAIN_APP.stats.html")

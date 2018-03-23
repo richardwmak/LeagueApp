@@ -1,9 +1,11 @@
-from   _version import __version__
 import configparser
 import logging
+from typing import Tuple
+
 import requests
+
+from   _version import __version__
 from   tools.decorators import retry
-from   typing import Tuple
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -18,7 +20,7 @@ class ApiRequest:
 # INITIALIZATION METHODS
 ###############################################################################
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Get api key from ini.
 
         TODO: somehow do this in a sensible way when in prod
@@ -40,7 +42,7 @@ class ApiRequest:
         self.session_key = session_key
 
     @retry(3, 1, requests.Timeout)
-    def get_data_from_url(self, param_dict: dict = {}, use_json: bool = True) -> Tuple[dict, int]:
+    def get_data_from_url(self, param_dict: dict, use_json: bool = True) -> Tuple[dict, int]:
         """Perform the actual api request.
 
         Keyword Arguments:
@@ -65,21 +67,19 @@ class ApiRequest:
             data = http_response.json()
             status_code = http_response.status_code
 
-            if status_code is 200:
+            if status_code == 200:
                 logger.info("Successfully retrieved data.")
             else:
-                logger.error("Failed to retrieve data. HTTP error code: %s" % status_code)
+                logger.error("Failed to retrieve data. HTTP error code: %s", status_code)
 
             return data, status_code
 
         except requests.HTTPError as e:
-            logger.info("An HTTP error has occured: %s" % e)
-            return None, 0
-
+            logger.info("An HTTP error has occured: %s", e)
+            return ({"error": True}, 0)
         except requests.Timeout as e:
-            logger.info("Connection timed out: %s" % e)
-            return None, 0
-
+            logger.info("Connection timed out: %s", e)
+            raise
         except requests.RequestException as e:
-            logger.info("Error processing HTTP request: %s" % e)
-            return None, 0
+            logger.info("Error processing HTTP request: %s", e)
+            return ({"error": True}, 0)
