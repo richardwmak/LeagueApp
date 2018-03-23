@@ -24,3 +24,7 @@ body {
     padding: 20px;
     box-shadow: 1px 1px lightgrey
 }
+
+.margins {
+    margin-top: 10px;
+}
