@@ -1,26 +1,24 @@
-{% extends "layout.html" %}
-{% block title%}Downloading info.{% endblock %} 
-{% block head %}
-{{ super() }}
+{% extends "layout.html" %} {% block title%}Downloading info.{% endblock %} {% block head %} {{ super() }}
 <link href="/static/css/get_info.css?{{ timestamp }}" rel="stylesheet">
 <script src="/static/js/get_info.js?{{ timestamp }}"></script>
-{% endblock %}
-{% block content %}
+{% endblock %} {% block content %}
 <div class="rounded-edge row text-center">
     <div class="mb-12">
         <h2>Downloading your last.fm scrobbles.</h2>
-        <div class="row progress margins" role="progressbar"></div>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar"></div>
+        </div>
         <div class="btn-group margins" role="group">
             <button type="button" class="btn btn-outline-success" id="start-btn">
                 <span class="fa-stack fa-fw">
-                    <i class="far fa-circle fa-stack-2x"></i>
+                    <i class="far fa-circle fa-stack-2x" id="start-btn-circle"></i>
                     <i class="fas fa-download fa-stack-1x"></i>
                 </span>
                 Start
             </button>
-            <button type="button" class="btn btn-outline-danger">
+            <button type="button" class="btn btn-outline-danger" id="pause-btn" disabled>
                 <span class="fa-stack fa-fw">
-                    <i class="far fa-circle fa-stack-2x"></i>
+                    <i class="far fa-circle fa-stack-2x" id="pause-btn-circle"></i>
                     <i class="fas fa-pause fa-stack-1x"></i>
                 </span>
                 Pause
