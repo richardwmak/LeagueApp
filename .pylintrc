@@ -129,6 +129,8 @@ disable=print-statement,
         dict-values-not-iterating,
         C0111,
         E0401,
+        R0902,
+        R0914,
         R1705
 
 # Enable the message, report, category or checker with the given id(s). You can
@@ -232,6 +234,7 @@ function-naming-style=snake_case
 
 # Good variable names which should always be accepted, separated by a comma
 good-names=e,
+           f,
            i,
            j,
            k,

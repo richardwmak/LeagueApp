@@ -59,7 +59,7 @@ def set_info(auth: Auth = AUTH) -> Any:
     # set the token
     new_token = request.args.get("token")
     auth.get_session_key(new_token, API, SESSION)
-
+    # TODO: pretty sure this won't do anything if it fails...
     return redirect(url_for("MAIN_APP.get_info"))
 
 

@@ -1,11 +1,12 @@
 import configparser
 import logging
-from typing import Tuple
+from typing import Dict, Tuple
 
 import requests
 
-from   _version import __version__
-from   tools.decorators import retry
+from _version import __version__
+from tools.decorators import retry
+from model.custom_session import Session
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -15,10 +16,6 @@ class ApiRequest:
     """
     Handles the API requests and data storage.
     """
-
-###############################################################################
-# INITIALIZATION METHODS
-###############################################################################
 
     def __init__(self) -> None:
         """Get api key from ini.
@@ -30,8 +27,11 @@ class ApiRequest:
 
         self.version = __version__
         self.api_key = config["api"]["key"]
-        self.session_key = ""
-        self.last_request = None
+        self.session_key: str
+        session = Session()
+
+        if session.check_key("session_key"):
+            self.session_key = session.select_key("session_key")
 
     def set_session_key(self, session_key: str) -> None:
         """Store the last.fm token obtained from the auth request.
@@ -42,7 +42,7 @@ class ApiRequest:
         self.session_key = session_key
 
     @retry(3, 1, requests.Timeout)
-    def get_data_from_url(self, param_dict: dict, use_json: bool = True) -> Tuple[dict, int]:
+    def get_data_from_url(self, param_dict: Dict, use_json: bool = True) -> Tuple[Dict, int]:
         """Perform the actual api request.
 
         Keyword Arguments:

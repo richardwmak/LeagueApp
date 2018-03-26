@@ -5,6 +5,7 @@ import logging
 import sqlite3
 from typing import Any, Tuple
 
+from tools.decorators import retry
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -31,11 +32,12 @@ class Db:
         """Open database connection.
         """
         if self.open_connection is True:
-            raise Exception("Database object already has open connection.")
+            raise Exception("Database already has open connection.")
 
         logger.info("Opening database connection.")
         try:
-            self.conn = sqlite3.connect("model/data/" + self.db_name)
+            self.conn = sqlite3.connect(
+                "model/data/" + self.db_name, check_same_thread=False)
         except sqlite3.Error as e:
             logger.error("Failed to open database connection: %s", repr(e))
             raise
@@ -46,7 +48,8 @@ class Db:
         """Close database connection.
         """
         if self.open_connection is False:
-            raise Exception("Database object does not have a connection to close.")
+            raise Exception(
+                "Database object does not have a connection to close.")
 
         logger.info("Closing database connection.")
         try:
@@ -57,9 +60,7 @@ class Db:
 
         self.open_connection = False
 
-    def execute_query(self,
-                      sql: str,
-                      params: Tuple = None) -> None:
+    def execute_query(self, sql: str, params: Tuple = None) -> None:
         """Execute the query.
         """
         if self.open_connection is False:
@@ -101,9 +102,8 @@ class Db:
             logger.error("Failed to fetch results: %s", repr(e))
             raise
 
-    def query(self,
-              sql: str = "",
-              params: Tuple = None,
+    @retry(5, 1, Exception)
+    def query(self, sql: str = "", params: Tuple = None,
               fetchall: bool = True) -> Any:
         """Shorthand for running a full query.
         """

@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 import sqlite3
 from typing import Any, Tuple
+
 from model.db import Db
 
 # set up logging

@@ -1,6 +1,8 @@
-from   controller.controller import main_app
-from   flask import Flask
 import logging
+
+from controller.controller import MAIN_APP
+from controller.ajax import AJAX_APP
+from flask import Flask
 
 
 if __name__ == "__main__":
@@ -9,20 +11,21 @@ if __name__ == "__main__":
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
-    fh = logging.FileHandler("app.log", mode="w+")
-    ch = logging.StreamHandler()
+    FH = logging.FileHandler("app.log", mode="w+")
+    CH = logging.StreamHandler()
 
-    formatter = logging.Formatter('%(levelname)s - %(asctime)s - %(name)s\n%(message)s')
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
+    FORMATTER = logging.Formatter('%(levelname)s - %(asctime)s - %(name)s\n%(message)s')
+    FH.setFormatter(FORMATTER)
+    CH.setFormatter(FORMATTER)
 
-    logger.addHandler(fh)
-    logger.addHandler(ch)
+    logger.addHandler(FH)
+    logger.addHandler(CH)
     logger.setLevel(logging.DEBUG)
 
-    app = Flask(__name__,
+    APP = Flask(__name__,
                 static_folder="view/static",
                 template_folder="view/templates")
-    app.register_blueprint(main_app)
+    APP.register_blueprint(MAIN_APP)
+    APP.register_blueprint(AJAX_APP)
 
-    app.run(debug=True, port=5000)
+    APP.run(debug=True, port=5000, threaded=True)
