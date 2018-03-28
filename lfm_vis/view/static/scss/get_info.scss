@@ -1,0 +1,50 @@
+/* https://getbootstrap.com/docs/4.0/examples/sign-in/signin.css */
+
+/* center everything */
+
+@import "_base";
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    @include flexbox;
+    @include align-items(center);
+    @include justify-content(center);
+}
+
+.margin {
+    margin: 10*$pxrem;
+}
+
+.rounded-edge {
+    border: solid $pxrem grey;
+    border-radius: 15*$pxrem;
+    padding: 20*$pxrem;
+    -webkit-box-shadow: $pxrem $pxrem lightgrey;
+    box-shadow: $pxrem $pxrem lightgrey;
+}
+
+.margins {
+    margin-top: $pxrem;
+}
+
+.progress {
+    height: 1.2rem;
+    background: lightgrey;
+    border-radius: 15*$pxrem;
+    -webkit-box-shadow: inset $pxrem $pxrem grey;
+    box-shadow: inset $pxrem $pxrem grey;
+    overflow: hidden;
+    span {
+        height: 1rem;
+        display: block;
+        background: #b3daff;
+        border-radius: 15*$pxrem;
+        border: 0.1rem solid #80c1ff;
+        @include flexbox;
+        @include align-items(center);
+        @include justify-content(center);
+    }
+}

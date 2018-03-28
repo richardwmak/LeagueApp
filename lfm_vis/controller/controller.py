@@ -10,6 +10,7 @@ from model.auth import Auth
 from model.api import ApiRequest
 from model.custom_session import Session
 from view.login import login_render
+from view.stats import stats_render
 
 # Set up logging.
 logger = logging.getLogger(__name__)
@@ -33,8 +34,8 @@ AUTH = Auth()
 @MAIN_APP.route("/")
 def main_page(session: Session = SESSION) -> Any:
     """Route to login or main screen."""
-    if session.check_key("data_downloaded") and session.select_key(
-            "data_downloaded"):
+    if session.check_key("listen_history.done") and session.select_key(
+            "listen_history.done") == 1:
         return redirect(url_for("MAIN_APP.stats"))
     elif session.check_key("logged_in") and session.select_key("logged_in"):
         return redirect(url_for("MAIN_APP.get_info"))
@@ -73,4 +74,4 @@ def get_info() -> Any:
 @MAIN_APP.route("/stats")
 def stats() -> Any:
     """Load main page."""
-    return render_template("MAIN_APP.stats.html")
+    return stats_render()

@@ -3,7 +3,7 @@ import threading
 import time
 from typing import Any
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, redirect, url_for
 
 from model.custom_session import Session
 from model.listen_history import ListenHistory
@@ -37,6 +37,10 @@ def listen_history_download_process() -> None:
         except Exception:
             time.sleep(1)
             continue
+
+        if listen_history.current_page == listen_history.total_pages - 1:
+            SESSION.insert_key_value("listen_history.done", True)
+            return redirect(url_for("/stats"))
 
         time.sleep(1)
 

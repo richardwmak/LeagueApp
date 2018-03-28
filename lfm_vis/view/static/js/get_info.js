@@ -56,6 +56,11 @@ function pause(start_btn, start_btn_circle, pause_btn, pause_btn_circle)
     start_btn_circle.toggleClass("fa fa-circle-notch fa-spin far far-circle");
     pause_btn_circle.toggleClass("fa fa-circle-notch fa-spin far far-circle");
 
+    pause_download();
+}
+
+function pause_download()
+{
     $.ajax(
     {
         type: "POST",
@@ -90,8 +95,15 @@ function check_progress()
         {
             console.log(data);
             var progress = precision_round(100 * (data.current_page / data.total_pages), 2) + "%";
-            $(".progress-bar").css("width", progress);
-            $(".progress-bar").html(progress);
+            $("#progress-bar").css("width", "calc(" + progress + " - 0.2rem)");
+            $("#progress-bar").html(progress);
+
+            // fallback in case python fails
+            if (data.current_page >= data.total_pages)
+            {
+                pause_download();
+                window.location.replace("/stats");
+            }
         });
     }
 

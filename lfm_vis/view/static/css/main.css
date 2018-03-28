@@ -1,8 +1,80 @@
-.hidden {
-    display: none;
+body {
+  font-family: "Roboto", sans-serif;
+  color: #212121;
+}
+
+h1 {
+  font-family: "Roboto", sans-serif;
+  font-weight: 100;
+  color: #212121;
+}
+
+p {
+  font-weight: 400;
+  color: #4a4a4a;
 }
 
 footer {
-    position: absolute;
-    bottom: 0;
+  position: absolute;
+  bottom: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.btn {
+  font-weight: 400;
+  /* center the text on the button */
+  text-align: center;
+  vertical-align: middle;
+  /* prevent users from selecting text */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* border */
+  border: 0.05rem solid darkgrey;
+  border-radius: 0.5rem;
+  /* background */
+  background-color: white;
+  /* transition length for hover */
+  -webkit-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+  /* set cursor behaviour */
+  cursor: pointer;
+}
+
+.btn[disabled] {
+  cursor: default;
+  opacity: 0.65;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.btn:hover[disabled] {
+  background-color: white;
+  color: #212121;
+}
+
+.btn-green {
+  color: green;
+}
+
+.btn-green:hover {
+  background-color: green;
+  color: white;
+}
+
+.btn-red {
+  color: red;
+}
+
+.btn-red:hover {
+  background-color: red;
+  color: white;
 }

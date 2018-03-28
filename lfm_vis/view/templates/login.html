@@ -1,14 +1,10 @@
-{% extends "layout.html" %}
-{% block title%}Set your account{% endblock %} 
-{% block head %}
-{{ super() }}
+{% extends "layout.html" %} {% block title%}Set your account{% endblock %} {% block head %} {{ super() }}
 <link href="/static/css/login.css?{{ timestamp }}" rel="stylesheet">
 <script src="/static/js/login.js?{{ timestamp }}"></script>
-{% endblock %}
-{% block content %}
-<div class="row text-center">
-    <div class="mb-12">
-        <h1 class="h3 font-weight-bold">last.fm visualiser</h1>
+{% endblock %} {% block content %}
+<div class="text-center">
+    <div>
+        <h1 class="h3">last.fm visualiser</h1>
         <p>Click the button below to be authorise this application with your last.fm account.</p>
         <a href="{{ auth_url }}">
             <img src="/static/img/lastfm_red.gif">
