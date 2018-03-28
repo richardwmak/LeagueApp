@@ -36,11 +36,11 @@ def main_page(session: Session = SESSION) -> Any:
     """Route to login or main screen."""
     if session.check_key("listen_history.done") and session.select_key(
             "listen_history.done") == 1:
-        return redirect(url_for("MAIN_APP.stats"))
+        return redirect(url_for("/stats"))
     elif session.check_key("logged_in") and session.select_key("logged_in"):
-        return redirect(url_for("MAIN_APP.get_info"))
+        return redirect(url_for("/get_info"))
     else:
-        return redirect(url_for("MAIN_APP.login"))
+        return redirect(url_for("/login"))
 
 
 @MAIN_APP.route("/login")
@@ -61,7 +61,7 @@ def set_info(auth: Auth = AUTH) -> Any:
     new_token = request.args.get("token")
     auth.get_session_key(new_token, API, SESSION)
     # TODO: pretty sure this won't do anything if it fails...
-    return redirect(url_for("MAIN_APP.get_info"))
+    return redirect(url_for("/get_info"))
 
 
 @MAIN_APP.route("/get_info")
