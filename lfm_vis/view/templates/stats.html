@@ -6,4 +6,21 @@
 <script src="/static/js/stats.js?{{ timestamp }}"></script>
 {% endblock %}
 {% block content %}
+<div class="tab" id="top">
+<h1>Top listens</h1>
+<div id="listen-columns">
+    <div id="artists">
+        <h2>Top artists</h2>
+    </div>
+    <div id="albums">
+        <h2>Top albums</h2>
+    </div>
+    <div id="songs">
+        <h2>Top songs</h2>
+    </div>
+</div>
+</div>
+<div class="tab" id="other" style="display: none">
+
+</div>
 {% endblock %}
